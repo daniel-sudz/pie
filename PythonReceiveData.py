@@ -2,53 +2,42 @@
 #      *                                                                *
 #      *                                                                *
 #      *    Example Python program that receives data from an Arduino   *
+#      *    dependencies: pyserial, numpy                               *
 #      *                                                                *
 #      *                                                                *
 #      ******************************************************************
 
-
 import serial
-
-#
-# Note 1: This python script was designed to run with Python 3.
-#
-# Note 2: The script uses "pyserial" which must be installed.  If you have
-#         previously installed the "serial" package, it must be uninstalled
-#         first.
-#
-# Note 3: While this script is running you can not re-program the Arduino.
-#         Before downloading a new Arduino sketch, you must exit this
-#         script first.
-#
+import numpy as np
 
 
-#
-# Set the name of the serial port.  Determine the name as follows:
-#	1) From Arduino's "Tools" menu, select "Port"
-#	2) It will show you which Port is used to connect to the Arduino
-#
 # For Windows computers, the name is formatted like: "COM6"
 # For Apple computers, the name is formatted like: "/dev/tty.usbmodemfa141"
-#
 arduinoComPort = "/dev/tty.usbmodem1201"
 
-
-#
 # Set the baud rate
-# NOTE1: The baudRate for the sending and receiving programs must be the same!
-# NOTE2: For faster communication, set the baudRate to 115200 below
-#        and check that the arduino sketch you are using is updated as well.
-#
 baudRate = 115200
 
-
-#
 # open the serial port
-#
 serialPort = serial.Serial(arduinoComPort, baudRate, timeout=1)
 
+# polyfit calibration data of distance sensor using 3rd order polynomial
+def fit_calibration(voltage_readings: [float], distance_actual: [float], ):
+  return np.polyfit(np.array(voltage_readings), np.array(distance_actual), 3)
 
+# calibration data that we recorded
+calibration_coefficients = fit_calibration([1, 2, 3, 4], [1, 8, 27, 81])
 
-while True:
-  line = serialPort.readline().decode()
-  print(line)
+# determine distance using calibration data
+def voltage_to_distance(voltage: float):
+  distance = 0
+  # evaluate polynomial using naive term summation
+  for idx, coef in enumerate(calibration_coefficients):
+    distance += coef * (voltage ** (len(calibration_coefficients) - idx))
+  return distance
+
+print("distance test: ", voltage_to_distance(4))
+
+#while True:
+#  line = serialPort.readline().decode()
+#  print(line)
