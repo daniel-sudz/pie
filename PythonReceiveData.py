@@ -9,6 +9,7 @@
 
 import serial
 import numpy as np
+import time
 
 
 # For Windows computers, the name is formatted like: "COM6"
@@ -38,6 +39,12 @@ def voltage_to_distance(voltage: float):
 
 print("distance test: ", voltage_to_distance(4))
 
-#while True:
-#  line = serialPort.readline().decode()
-#  print(line)
+
+
+while True:
+  #line = serialPort.readline().decode()
+  serialPort.write(bytes("SEND_SERVO\n", "utf8"))
+  serialPort.write(bytes("50\n","utf8"))
+  time.sleep(5)
+  serialPort.write(bytes("SEND_SERVO\n","utf8"))
+  serialPort.write(bytes("100\n","utf8"))
