@@ -12,6 +12,7 @@ import numpy as np
 import time
 import subprocess
 import codecs
+import os
 from pathlib import Path
 
 # Intro text
@@ -66,7 +67,7 @@ def write_with_flush(str: str):
 
 # calibration data that we recorded
 def get_calibration_data():
-  cal_distances = [4, 8, 12]
+  cal_distances = [1] * 10000 #[4, 8, 12]
   cal_voltages = []
   calibration_file = Path(__file__).parent.parent / "calibration.txt"
   if(calibration_file.exists()):
@@ -76,21 +77,40 @@ def get_calibration_data():
     print(f"calibration file {calibration_file.as_posix()} not found, initiating calibration sequences:\n\n")
     for dist in cal_distances:
         input(f"Position object {dist} inches from sensor, press any button to continue")
-        write_with_flush("CALIBRATE\n")
+        write_with_flush("READING\n500\n")
         voltage = serialPort.readline().decode("ascii")
         cal_voltages += voltage
         print(f"Read voltage {voltage}")
 
-get_calibration_data()
+#get_calibration_data()
 
 print("distance test: ", voltage_to_distance(4))
 
+# records a scan and saves it
+def record_scan():
+    data = []
+    for pan in range(0, 180, 10):
+        for tilt in range(0, 180, 10):
+            sample_count = 100
+            # send tilt angle, tilt angle, and record distance
+            write_with_flush(f"PAN\n{pan}\nTILT\n{tilt}\nREADING\n{sample_count}\n")
+            voltage = serialPort.readline().decode("ascii")
+            data += [(pan, tilt, voltage)]
+            if(os.getenv('DEBUG') != None):
+                print(f"[SCAN DEBUG]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}")
+    write_with_flush("RESET\n")
+
+    # create filename based on cur time
+    cur_date = time.strftime("%Y-%m-%d-%H-%M-%S")
+    filename = f"scan-{cur_date}.txt"
+    filepath = Path(__file__).parent.parent / "scans" / filename
+    
+    # save scan to file
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath.as_posix(), "w") as file:
+        for entry in data:
+            file.write(f"{entry[0]},{entry[1]},{entry[3]}\n")
 
 
-while True:
-  print("loop!")
-  write_with_flush("ECHO\n")
-  #res = block_readline()
-  res = serialPort.readline().decode("ascii")
-  print(res)
-  time.sleep(5)
+
+
