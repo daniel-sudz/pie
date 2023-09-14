@@ -15,8 +15,12 @@ import codecs
 import os
 from pathlib import Path
 
-# Intro text
-                                                                  
+
+# prints a console info section seperator
+def print_break():
+   print("-" * 130)
+
+# Intro text                                            
 intro_txt = """                                        
   ______ ______ ______ ______ ______ ______ ______ ______ ______  
  |______|______|______|______|______|______|______|______|______| 
@@ -29,7 +33,9 @@ intro_txt = """
  |_|____ ______ ______ ______ ______ _|__/_ ______ ______ _____|_|
  |______|______|______|______|______|______|______|______|______| 
  """
+print_break()
 print(intro_txt)
+print_break()
 
 # For Windows computers, the name is formatted like: "COM6"
 # For Apple computers, the name is formatted like: "/dev/tty.usbmodemfa141"
@@ -42,7 +48,7 @@ baudRate = 115200
 # open the serial port
 print("WAITING for serial port to connect!")
 serialPort = serial.Serial(arduino_com_port, baudRate, timeout=None)
-time.sleep(2) # bug in pyserial library returning before binding: https://stackoverflow.com/a/49429639\
+time.sleep(2) # bug in pyserial library returning before binding: https://stackoverflow.com/a/49429639
 
 
 # polyfit calibration data of distance sensor using 3rd order polynomial
@@ -65,6 +71,10 @@ def write_with_flush(str: str):
   serialPort.write(bytes(str, "utf8"))
   serialPort.flush()
 
+# read a line from serial
+def read_line():
+   serialPort.readline().decode("ascii").strip()
+
 # calibration data that we recorded
 def get_calibration_data():
   cal_distances = [1] * 10000 #[4, 8, 12]
@@ -78,16 +88,16 @@ def get_calibration_data():
     for dist in cal_distances:
         input(f"Position object {dist} inches from sensor, press any button to continue")
         write_with_flush("READING\n500\n")
-        voltage = serialPort.readline().decode("ascii")
+        voltage = read_line()
         cal_voltages += voltage
         print(f"Read voltage {voltage}")
 
 #get_calibration_data()
 
-print("distance test: ", voltage_to_distance(4))
-
 # records a scan and saves it
 def record_scan():
+    print_break()
+    print("Starting scan!")
     # go up->down and then down->up to save time while tilting
     tilt_inverse = False
     data = []
@@ -99,7 +109,7 @@ def record_scan():
             sample_count = 100
             # send tilt angle, tilt angle, and record distance
             write_with_flush(f"PAN\n{pan}\nTILT\n{tilt}\nREADING\n{sample_count}\n")
-            voltage = serialPort.readline().decode("ascii")
+            voltage = read_line()
             data += [(pan, tilt, voltage)]
             if(os.getenv('DEBUG') != None):
                 print(f"[SCAN DEBUG]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}")
@@ -112,11 +122,58 @@ def record_scan():
     
     # save scan to file
     filepath.parent.mkdir(parents=True, exist_ok=True)
-    with open(filepath.as_posix(), "w") as file:
+    with open(filepath.as_posix(), "w", newline='') as file:
+        file.write
         for entry in data:
             file.write(f"{entry[0]},{entry[1]},{entry[2]}\n")
 
+# main control loop
+def main():
+   response = input(
+      """Select a mode below:
+            1) Initiate a full scan
+            2) Load a previous scan
+            3) Calibrate the distance sensor
+            4) Send a custom pan command
+            5) Send a custom tilt command
+      """
+         ).strip()
+   if response == "1":
+      pass
+   elif response == "2":
+      pass
+   elif response == "3":
+      pass
+   elif response == "4":
+      angle = int(input("Enter an angle: "))
+      if(angle < 0 or angle > 180):
+         print("Angle must be between 0 and 180 degrees!")
+         print_break()
+         main()
+      else:
+         write_with_flush(f"PAN\n{angle}\n")
+         print("Command sent!")
+         print_break()
+         main()
+   elif response == "5":
+      angle = int(input("Enter an angle: "))
+      if(angle < 0 or angle > 180):
+         print("Angle must be between 0 and 180 degrees!")
+         print_break()
+         main()
+      else:
+         write_with_flush(f"TILT\n{angle}\n")
+         print("Command sent!")
+         print_break()
+         main()
+   else:
+      print("Error, response does not match one of the supported modes!")
+      print_break()
+      main()
+   # record_scan()
 
-record_scan()
+if __name__ == "__main__":
+   main()
+
 
 
