@@ -88,9 +88,14 @@ print("distance test: ", voltage_to_distance(4))
 
 # records a scan and saves it
 def record_scan():
+    # go up->down and then down->up to save time while tilting
+    tilt_inverse = False
     data = []
     for pan in range(0, 180, 10):
+        # swap the carriage return
+        tilt_inverse = not tilt_inverse
         for tilt in range(0, 180, 10):
+            tilt = (180 - tilt) if tilt_inverse else tilt
             sample_count = 100
             # send tilt angle, tilt angle, and record distance
             write_with_flush(f"PAN\n{pan}\nTILT\n{tilt}\nREADING\n{sample_count}\n")
@@ -109,8 +114,9 @@ def record_scan():
     filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(filepath.as_posix(), "w") as file:
         for entry in data:
-            file.write(f"{entry[0]},{entry[1]},{entry[3]}\n")
+            file.write(f"{entry[0]},{entry[1]},{entry[2]}\n")
 
 
+record_scan()
 
 
