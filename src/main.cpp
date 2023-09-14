@@ -23,7 +23,7 @@ template <typename ...T>
 void print_format(char format[], T... args) {
   char buffer[BUFFER_SIZE]; 
   sprintf(buffer, format, args...);
-  Serial.write(buffer);
+  Serial.print(buffer);
   while(!Serial.availableForWrite()) {
   };
   Serial.flush();
@@ -75,7 +75,12 @@ void loop()
     if(command.equals("ECHO")) {
       print_format("ECHO\n");
     }
-    else {
+    else if(command.equals("CALIBRATE")) {
+      float reading = 2123.12; // reading code goes here
+      print_format("%f\n", reading);
+    }
+    else
+    {
       // unrecognized command
     }
   }
