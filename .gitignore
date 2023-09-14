@@ -25,3 +25,10 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# https://github.com/toptal/gitignore/blob/master/templates/PlatformIO.gitignore
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+.pio

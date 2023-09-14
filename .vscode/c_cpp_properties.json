@@ -10,6 +10,7 @@
             "includePath": [
                 "/Users/danielsudz/Documents/classes/pie/miniproject2/include",
                 "/Users/danielsudz/Documents/classes/pie/miniproject2/src",
+                "/Users/danielsudz/Documents/classes/pie/miniproject2/.pio/libdeps/uno/Servo/src",
                 "/Users/danielsudz/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "/Users/danielsudz/.platformio/packages/framework-arduino-avr/variants/standard",
                 "/Users/danielsudz/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
@@ -24,6 +25,7 @@
                 "path": [
                     "/Users/danielsudz/Documents/classes/pie/miniproject2/include",
                     "/Users/danielsudz/Documents/classes/pie/miniproject2/src",
+                    "/Users/danielsudz/Documents/classes/pie/miniproject2/.pio/libdeps/uno/Servo/src",
                     "/Users/danielsudz/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "/Users/danielsudz/.platformio/packages/framework-arduino-avr/variants/standard",
                     "/Users/danielsudz/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
