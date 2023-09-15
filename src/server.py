@@ -113,7 +113,8 @@ def record_calibration_data():
           file.write(f"{cal_distances[idx]}, {cal_voltages[idx]}\n")
   print("wrote calibration file!")
 
-# reads the calibration file and returns a function that converts voltage to distance
+# reads the calibration file and returns a function that converts voltage to distance as well as the calibration data itself
+# (voltage_to_distance_func, calibration_data)
 # if the calibration file does not exist returns None
 def read_calibration_data():
    calibration_file = Path(__file__).parent.parent / "calibration.txt"
@@ -124,7 +125,7 @@ def read_calibration_data():
    calibration_data = list((float(val[0]), float(val[1])) for val in (line.split(',') for line in calibration_lines))
    calibration_coefficients = fit_calibration(list(x[1] for x in calibration_data), list(x[0] for x in calibration_data))
 
-   return (lambda v: voltage_to_distance(v, calibration_coefficients))
+   return ((lambda v: voltage_to_distance(v, calibration_coefficients)), calibration_data)
 
 # records and save a scan
 def record_scan():
@@ -218,11 +219,28 @@ def main():
          write_with_flush(f"TILT\n{angle}\n")
          print("Command sent!")
    elif response == "6":
-      voltage_to_distance_func = read_calibration_data()
-      if(not voltage_to_distance):
+      voltage_to_distance_data = read_calibration_data()
+      if(not voltage_to_distance_data):
          print("Calibration data not found, the sensor needs to be calibrated!")
       else:
+         voltage_to_distance_func = voltage_to_distance_data[0]
+         voltage_to_distance_data = voltage_to_distance_data[1]
          print("Loaded calibration data")
+         fig = plt.figure()
+         x = list(x for x in range(300,600))
+         plt.plot(
+            x, 
+            list(voltage_to_distance_func(xv) for xv in x), 
+            label="Calibration fit function", 
+            color="blue")
+         plt.scatter(
+            list(v[1] for v in voltage_to_distance_data), 
+            list(v[0] for v in voltage_to_distance_data), 
+            label="Calibration fit raw data", 
+            color="blue", 
+            facecolor="none")
+         plt.legend()
+         plt.show()
          print("terst", voltage_to_distance_func(300), voltage_to_distance_func(400), voltage_to_distance_func(500), voltage_to_distance_func(600))
    else:
       print("Error, response does not match one of the supported modes!")
