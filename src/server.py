@@ -56,7 +56,6 @@ time.sleep(2) # bug in pyserial library returning before binding: https://stacko
 
 # polyfit calibration data of distance sensor using 3rd order polynomial
 def fit_calibration(voltage_readings: [float], distance_actual: [float]):
-  print(voltage_readings, distance_actual)
   return np.polyfit(np.array(voltage_readings), np.array(distance_actual), 1)
 
 # convert pan/tilt/distance to x,y,z coordinates 
@@ -70,7 +69,6 @@ def pan_tilt_to_coords(pan: int, tilt: int, distance: float):
 
 # determine distance using calibration data
 def voltage_to_distance(voltage: float, calibration_coefficients: [float]):
-  print(voltage, calibration_coefficients)
   distance = 0
   # evaluate polynomial using naive term summation
   for idx, coef in enumerate(calibration_coefficients):
@@ -239,12 +237,13 @@ def main():
             label="Calibration fit raw data", 
             color="blue", 
             facecolor="none")
+         plt.xlabel("AnalogRead() from Distance Sensor")
+         plt.ylabel("Distance (inches) from Distance Sensor")
+         plt.title("Distance Sensor Readings vs Actual Distance Calibration")
          plt.legend()
          plt.show()
-         print("terst", voltage_to_distance_func(300), voltage_to_distance_func(400), voltage_to_distance_func(500), voltage_to_distance_func(600))
    else:
       print("Error, response does not match one of the supported modes!")
-   # record_scan()
 
 if __name__ == "__main__":
    read_calibration_data()
