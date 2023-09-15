@@ -2,7 +2,7 @@
 #      *                                                                *
 #      *                                                                *
 #      *    Example Python program that receives data from an Arduino   *
-#      *    dependencies: pyserial, numpy                               *
+#      *    dependencies: pyserial, numpy, matplotlib                   *
 #      *                                                                *
 #      *                                                                *
 #      ******************************************************************
@@ -13,6 +13,9 @@ import time
 import subprocess
 import codecs
 import os
+import sys
+import math
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 
@@ -52,18 +55,26 @@ time.sleep(2) # bug in pyserial library returning before binding: https://stacko
 
 
 # polyfit calibration data of distance sensor using 3rd order polynomial
-def fit_calibration(voltage_readings: [float], distance_actual: [float], ):
-  return np.polyfit(np.array(voltage_readings), np.array(distance_actual), 3)
+def fit_calibration(voltage_readings: [float], distance_actual: [float]):
+  print(voltage_readings, distance_actual)
+  return np.polyfit(np.array(voltage_readings), np.array(distance_actual), 1)
 
-
-calibration_coefficients = fit_calibration([1, 2, 3, 4], [1, 8, 27, 81])
+# convert pan/tilt/distance to x,y,z coordinates 
+# assumes that pan/tilt are in degrees
+# see https://www.mathworks.com/matlabcentral/answers/427558-how-can-i-create-xyz-coordinant-from-pan-tilt-system-angles
+def pan_tilt_to_coords(pan: int, tilt: int, distance: float):
+    x = distance * math.cos(math.radians(tilt)) * math.cos(math.radians(pan))
+    y = distance * math.cos(math.radians(tilt)) * math.sin(math.radians(pan))
+    z = distance * math.sin(math.radians(tilt))
+    return (x, y, z)
 
 # determine distance using calibration data
-def voltage_to_distance(voltage: float):
+def voltage_to_distance(voltage: float, calibration_coefficients: [float]):
+  print(voltage, calibration_coefficients)
   distance = 0
   # evaluate polynomial using naive term summation
   for idx, coef in enumerate(calibration_coefficients):
-    distance += coef * (voltage ** (len(calibration_coefficients) - idx))
+    distance += coef * (voltage ** (len(calibration_coefficients) - idx - 1))
   return distance
 
 # writes to serial port and then flushes port
@@ -73,46 +84,76 @@ def write_with_flush(str: str):
 
 # read a line from serial
 def read_line():
-   serialPort.readline().decode("ascii").strip()
+   return serialPort.readline().decode("ascii").strip()
 
 # calibration data that we recorded
-def get_calibration_data():
-  cal_distances = [1] * 10000 #[4, 8, 12]
+def record_calibration_data():
+  cal_distances = [1, 2, 3, 4, 5, 6]
   cal_voltages = []
+  
+  # see if calibration file already exists
   calibration_file = Path(__file__).parent.parent / "calibration.txt"
   if(calibration_file.exists()):
-    print("located calibration file!, delete calibration.txt to recalibrate")
-  else:
-    print("-" * 130)
-    print(f"calibration file {calibration_file.as_posix()} not found, initiating calibration sequences:\n\n")
-    for dist in cal_distances:
-        input(f"Position object {dist} inches from sensor, press any button to continue")
-        write_with_flush("READING\n500\n")
-        voltage = read_line()
-        cal_voltages += voltage
-        print(f"Read voltage {voltage}")
+    response = input("located calibration file!, (enter y/Y) if you would like to recalibrate: ").strip().lower()
+    if(not (response == "y" or response == "Y")):
+       return
+  
+  # record a new calibration file
+  print_break()
+  print(f"calibration file {calibration_file.as_posix()} not found, initiating calibration sequences:\n\n")
+  for dist in cal_distances:
+      input(f"Position object {dist} inches from sensor, press any button to continue")
+      write_with_flush("READING\n2000\n")
+      voltage = read_line()
+      cal_voltages += [voltage]
+      print(f"Read voltage {voltage}")
+      calibration_file.parent.mkdir(parents=True, exist_ok=True)
+  with open(calibration_file.as_posix(), "w") as file:
+      for idx in range(len(cal_distances)):
+          file.write(f"{cal_distances[idx]}, {cal_voltages[idx]}\n")
+  print("wrote calibration file!")
 
-#get_calibration_data()
+# reads the calibration file and returns a function that converts voltage to distance
+# if the calibration file does not exist returns None
+def read_calibration_data():
+   calibration_file = Path(__file__).parent.parent / "calibration.txt"
+   if(not calibration_file.exists()):
+      return None
+   
+   calibration_lines = calibration_file.read_text().splitlines()
+   calibration_data = list((float(val[0]), float(val[1])) for val in (line.split(',') for line in calibration_lines))
+   calibration_coefficients = fit_calibration(list(x[1] for x in calibration_data), list(x[0] for x in calibration_data))
 
-# records a scan and saves it
+   return (lambda v: voltage_to_distance(v, calibration_coefficients))
+
+# records and save a scan
 def record_scan():
+    # min angle, max angle, and angle step
+    pan_range = [0, 180, 10]
+    tilt_range = [0, 180, 10]
+
     print_break()
     print("Starting scan!")
+
     # go up->down and then down->up to save time while tilting
     tilt_inverse = False
+
+    # record data as we pan/tilt
     data = []
-    for pan in range(0, 180, 10):
-        # swap the carriage return
+
+    # how many readings to average on distanse sensor for each measurement
+    sample_count = 100
+
+    for pan in range(pan_range[0], pan_range[1], pan_range[2]):
+        # swap the carriage return to not waste time
         tilt_inverse = not tilt_inverse
-        for tilt in range(0, 180, 10):
+        for tilt in range(tilt_range[0], tilt_range[1], tilt_range[2]):
             tilt = (180 - tilt) if tilt_inverse else tilt
-            sample_count = 100
-            # send tilt angle, tilt angle, and record distance
+            # send tilt angle, tilt angle, and record distance commands
             write_with_flush(f"PAN\n{pan}\nTILT\n{tilt}\nREADING\n{sample_count}\n")
             voltage = read_line()
             data += [(pan, tilt, voltage)]
-            if(os.getenv('DEBUG') != None):
-                print(f"[SCAN DEBUG]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}")
+            sys.stdout.write(f"[SCAN DEBUG]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}\r")
     write_with_flush("RESET\n")
 
     # create filename based on cur time
@@ -136,44 +177,59 @@ def main():
             3) Calibrate the distance sensor
             4) Send a custom pan command
             5) Send a custom tilt command
+            6) Generate a calibration plot visualization
       """
          ).strip()
    if response == "1":
-      pass
+      record_scan()
+      print("Scan completed and saved!")
    elif response == "2":
-      pass
+      scan_dir = Path(__file__).parent.parent / "scans"
+      found_scans = list(scan_dir.iterdir())
+      print_break()
+      print(f"Found {len(found_scans)} scans. Select a scan below (press any key to exit): \n")
+      for idx, scan in enumerate(found_scans):
+         print(f"\t{idx + 1}) {scan.name}")
+      response = input().strip()
+      if(not response.isdigit() or int(response) < 0 or int(response) > len(found_scans)):
+         print("Failed to select scan... returning")
+      else:
+         scan_idx = int(response) - 1
+         print(f"Selected scan {found_scans[scan_idx]}!")
+         fig = plt.figure()
+         ax = fig.add_subplot(projection='3d')
+         ax.scatter([0,1,2,3,4,5], [0,1,2,3,4,5], [0,1,2,3,4,5])
+         plt.show()
+
    elif response == "3":
-      pass
+      record_calibration_data()
    elif response == "4":
       angle = int(input("Enter an angle: "))
       if(angle < 0 or angle > 180):
          print("Angle must be between 0 and 180 degrees!")
-         print_break()
-         main()
       else:
          write_with_flush(f"PAN\n{angle}\n")
          print("Command sent!")
-         print_break()
-         main()
    elif response == "5":
       angle = int(input("Enter an angle: "))
       if(angle < 0 or angle > 180):
          print("Angle must be between 0 and 180 degrees!")
-         print_break()
-         main()
       else:
          write_with_flush(f"TILT\n{angle}\n")
          print("Command sent!")
-         print_break()
-         main()
+   elif response == "6":
+      voltage_to_distance_func = read_calibration_data()
+      if(not voltage_to_distance):
+         print("Calibration data not found, the sensor needs to be calibrated!")
+      else:
+         print("Loaded calibration data")
+         print("terst", voltage_to_distance_func(300), voltage_to_distance_func(400), voltage_to_distance_func(500), voltage_to_distance_func(600))
    else:
       print("Error, response does not match one of the supported modes!")
-      print_break()
-      main()
    # record_scan()
 
 if __name__ == "__main__":
-   main()
-
-
-
+   read_calibration_data()
+   while(True):
+      print_break()
+      main()

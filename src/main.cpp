@@ -18,8 +18,8 @@
 #define DIST_SENSOR A0
 
 // offsets for the servos for which angle they are at "zero"
-#define PAN_ZERO_OFFSET 0
-#define TILT_ZERO_OFFSET 90
+#define PAN_ZERO_OFFSET 95
+#define TILT_ZERO_OFFSET 110
 #define SERVO_MAX_ANGLE 180
 
 Servo pan_sero;
@@ -74,11 +74,11 @@ void setup()
   // start the serial port, must match the server!!!
   Serial.begin(115200);
 
+  // init the servo and wait for it to reset
   pan_sero.attach(PAN_PORT);
   tilt_servo.attach(TILT_PORT);
   delay(5000);
 
-  // place in a neutral position
   pan_sero.write(PAN_ZERO_OFFSET);
   tilt_servo.write(TILT_ZERO_OFFSET);
   delay(2000);
