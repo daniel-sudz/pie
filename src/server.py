@@ -128,8 +128,8 @@ def read_calibration_data():
 # records and save a scan
 def record_scan():
     # min angle, max angle, and angle step
-    pan_range = [0, 180, 10]
-    tilt_range = [0, 180, 10]
+    pan_range = [60, 180, 1]
+    tilt_range = [50, 150, 1]
 
     print_break()
     print("Starting scan!")
@@ -147,12 +147,18 @@ def record_scan():
         # swap the carriage return to not waste time
         tilt_inverse = not tilt_inverse
         for tilt in range(tilt_range[0], tilt_range[1], tilt_range[2]):
-            tilt = (180 - tilt) if tilt_inverse else tilt
+            tilt = ((tilt_range[1]) - (tilt - tilt_range[0])) if tilt_inverse else tilt
             # send tilt angle, tilt angle, and record distance commands
             write_with_flush(f"PAN\n{pan}\nTILT\n{tilt}\nREADING\n{sample_count}\n")
-            voltage = read_line()
-            data += [(pan, tilt, voltage)]
-            sys.stdout.write(f"[SCAN DEBUG]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}\r")
+            voltage = float(read_line().strip())
+            if voltage < 600 and voltage > 300:
+                data += [(pan, tilt, voltage)]
+                sys.stdout.write(f"[SCAN DEBUG RECORD]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}\r")
+            else:
+                sys.stdout.write(f"[SCAN DEBUG SKIP]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}\r")
+
+               
+            
     write_with_flush("RESET\n")
 
     # create filename based on cur time
