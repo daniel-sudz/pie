@@ -208,9 +208,10 @@ def main():
                 float(line.split(',')[2]))
              for line in scan_data_lines)
           scan_data_pan_tilt_distance = list((v[0], v[1], voltage_to_distance_func(v[2])) for v in scan_data_pan_tilt_voltage)
-          scan_data_x_y_z_distance = list(pan_tilt_to_coords(v[0], v[1], v[2]) for v in scan_data_pan_tilt_distance)
           # filter out data points that are too far away from the sensor
-          scan_data_x_y_z_distance = list(v for v in scan_data_x_y_z_distance if (v[0] < 6 and v[1] < 6 and v[2] < 6))
+          scan_data_pan_tilt_distance = list(v for v in scan_data_pan_tilt_distance if (v[2] < 6))
+          scan_data_x_y_z_distance = list(pan_tilt_to_coords(v[0], v[1], v[2]) for v in scan_data_pan_tilt_distance)
+          
 
           print(f"Selected scan {selected_scan}!")
 
