@@ -193,12 +193,34 @@ def main():
       if(not response.isdigit() or int(response) < 0 or int(response) > len(found_scans)):
          print("Failed to select scan... returning")
       else:
-         scan_idx = int(response) - 1
-         print(f"Selected scan {found_scans[scan_idx]}!")
-         fig = plt.figure()
-         ax = fig.add_subplot(projection='3d')
-         ax.scatter([0,1,2,3,4,5], [0,1,2,3,4,5], [0,1,2,3,4,5])
-         plt.show()
+        voltage_to_distance_data = read_calibration_data()
+        if(not voltage_to_distance_data):
+            print("Calibration data not found, the sensor needs to be calibrated!")
+        else:
+          voltage_to_distance_func = voltage_to_distance_data[0]
+          voltage_to_distance_data = voltage_to_distance_data[1]
+
+          selected_scan = found_scans[int(response) - 1]
+          scan_data_lines = selected_scan.read_text().splitlines()
+          scan_data_pan_tilt_voltage = list((
+                float(line.split(',')[0]), 
+                float(line.split(',')[1]), 
+                float(line.split(',')[2]))
+             for line in scan_data_lines)
+          scan_data_pan_tilt_distance = list((v[0], v[1], voltage_to_distance_func(v[2])) for v in scan_data_pan_tilt_voltage)
+          scan_data_x_y_z_distance = list(pan_tilt_to_coords(v[0], v[1], v[2]) for v in scan_data_pan_tilt_distance)
+          # filter out data points that are too far away from the sensor
+          scan_data_x_y_z_distance = list(v for v in scan_data_x_y_z_distance if (v[0] < 6 and v[1] < 6 and v[2] < 6))
+
+          print(f"Selected scan {selected_scan}!")
+
+          fig = plt.figure()
+          ax = fig.add_subplot(projection='3d')
+          ax.scatter(
+             list(v[0] for v in scan_data_x_y_z_distance), 
+             list(v[1] for v in scan_data_x_y_z_distance),
+             list(v[2] for v in scan_data_x_y_z_distance))
+          plt.show()
 
    elif response == "3":
       record_calibration_data()
