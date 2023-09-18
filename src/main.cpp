@@ -118,12 +118,12 @@ void loop()
     else if(command.equals("TILT")) {
       int angle = block_read_line_string().toInt();
       tilt_servo.write(angle);
-      delay(500);
+      delay(50);
     }
     else if(command.equals("PAN")) {
       int angle = block_read_line_string().toInt();
       pan_sero.write(angle);
-      delay(500);
+      delay(50);
     }
     else if(command.equals("RESET")) {
       pan_sero.write(PAN_ZERO_OFFSET);

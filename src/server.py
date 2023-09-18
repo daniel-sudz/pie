@@ -129,8 +129,10 @@ def read_calibration_data():
 # records and save a scan
 def record_scan():
     # min angle, max angle, and angle step
-    pan_range = [60, 180, 1]
-    tilt_range = [50, 150, 1]
+    pan_range = [60, 110, 1]
+    tilt_range = [70, 130, 1]
+
+    voltage_to_distance_func = read_calibration_data()[0]
 
     print_break()
     print("Starting scan!")
@@ -142,7 +144,7 @@ def record_scan():
     data = []
 
     # how many readings to average on distanse sensor for each measurement
-    sample_count = 100
+    sample_count = 50
 
     for pan in range(pan_range[0], pan_range[1], pan_range[2]):
         # swap the carriage return to not waste time
@@ -152,12 +154,8 @@ def record_scan():
             # send tilt angle, tilt angle, and record distance commands
             write_with_flush(f"PAN\n{pan}\nTILT\n{tilt}\nREADING\n{sample_count}\n")
             voltage = float(read_line().strip())
-            if voltage < 600 and voltage > 300:
-                data += [(pan, tilt, voltage)]
-                sys.stdout.write(f"[SCAN DEBUG RECORD]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}\r")
-            else:
-                sys.stdout.write(f"[SCAN DEBUG SKIP]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}\r")
-
+            data += [(pan, tilt, voltage)]
+            sys.stdout.write(f"[SCAN DEBUG RECORD]: PAN: {pan}, TILT: {tilt}, VOLTAGE: {voltage}, DISTANCE: {voltage_to_distance_func(voltage)} in \r")
                
             
     write_with_flush("RESET\n")
@@ -217,7 +215,7 @@ def main():
              for line in scan_data_lines)
           scan_data_pan_tilt_distance = list((v[0], v[1], voltage_to_distance_func(v[2])) for v in scan_data_pan_tilt_voltage)
           # filter out data points that are too far away from the sensor
-          scan_data_pan_tilt_distance = list(v for v in scan_data_pan_tilt_distance if (v[2] < 6))
+          scan_data_pan_tilt_distance = list(v for v in scan_data_pan_tilt_distance if (v[2] > 6 and v[2] < 15))
           scan_data_x_y_z_distance = list(pan_tilt_to_coords(v[0], v[1], v[2]) for v in scan_data_pan_tilt_distance)
           
 
