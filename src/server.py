@@ -129,8 +129,8 @@ def read_calibration_data():
 # records and save a scan
 def record_scan():
     # min angle, max angle, and angle step
-    pan_range = [60, 110, 1]
-    tilt_range = [70, 130, 1]
+    pan_range = [40, 125, 1]
+    tilt_range = [40, 125, 1]
 
     voltage_to_distance_func = read_calibration_data()[0]
 
@@ -215,14 +215,21 @@ def main():
              for line in scan_data_lines)
           scan_data_pan_tilt_distance = list((v[0], v[1], voltage_to_distance_func(v[2])) for v in scan_data_pan_tilt_voltage)
           # filter out data points that are too far away from the sensor
-          scan_data_pan_tilt_distance = list(v for v in scan_data_pan_tilt_distance if (v[2] > 6 and v[2] < 15))
-          scan_data_x_y_z_distance = list(pan_tilt_to_coords(v[0], v[1], v[2]) for v in scan_data_pan_tilt_distance)
+          scan_data_pan_tilt_distance = list(v for v in scan_data_pan_tilt_distance if (v[2] < 20))
+          for v in scan_data_pan_tilt_distance:
+             print(v) 
+          
+          scan_data_x_y_z_distance = list(pan_tilt_to_coords(v[0] - 39, v[1] - 39, v[2]) for v in scan_data_pan_tilt_distance)
           
 
           print(f"Selected scan {selected_scan}!")
 
           fig = plt.figure()
           ax = fig.add_subplot(projection='3d')
+          ax.set_box_aspect([1,1,1])
+          ax.axes.set_xlim3d(left=0, right=20) 
+          ax.axes.set_ylim3d(bottom=0, top=20) 
+          ax.axes.set_zlim3d(bottom=0, top=20) 
           ax.scatter(
              list(v[0] for v in scan_data_x_y_z_distance), 
              list(v[1] for v in scan_data_x_y_z_distance),

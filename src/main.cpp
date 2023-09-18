@@ -109,7 +109,7 @@ void loop()
       int samples = block_read_line_string().toInt();
       float reading_total = 0;
       for(int i=0; i<samples; i++) {
-        reading_total += analogRead(DIST_SENSOR);
+        reading_total += read_distance_clean();
         delay(1);
       }
       float reading_avg = reading_total / samples;
