@@ -56,7 +56,7 @@ time.sleep(2) # bug in pyserial library returning before binding: https://stacko
 
 # polyfit calibration data of distance sensor using 3rd order polynomial
 def fit_calibration(voltage_readings: [float], distance_actual: [float]):
-  return np.polyfit(np.array(voltage_readings), np.array(distance_actual), 1)
+  return np.polyfit(np.log(np.array(voltage_readings)), np.array(distance_actual), 2)
 
 # convert pan/tilt/distance to x,y,z coordinates 
 # assumes that pan/tilt are in degrees
@@ -69,6 +69,7 @@ def pan_tilt_to_coords(pan: int, tilt: int, distance: float):
 
 # determine distance using calibration data
 def voltage_to_distance(voltage: float, calibration_coefficients: [float]):
+  voltage = math.log(voltage)
   distance = 0
   # evaluate polynomial using naive term summation
   for idx, coef in enumerate(calibration_coefficients):
@@ -86,7 +87,7 @@ def read_line():
 
 # calibration data that we recorded
 def record_calibration_data():
-  cal_distances = [1, 2, 3, 4, 5, 6]
+  cal_distances = [8, 12, 16, 20, 24, 28, 32, 36]
   cal_voltages = []
   
   # see if calibration file already exists
@@ -183,6 +184,7 @@ def main():
             4) Send a custom pan command
             5) Send a custom tilt command
             6) Generate a calibration plot visualization
+            7) Test the distance sensor
       """
          ).strip()
    if response == "1":
@@ -254,7 +256,7 @@ def main():
          voltage_to_distance_data = voltage_to_distance_data[1]
          print("Loaded calibration data")
          fig = plt.figure()
-         x = list(x for x in range(300,600))
+         x = list(x for x in range(50,700))
          plt.plot(
             x, 
             list(voltage_to_distance_func(xv) for xv in x), 
@@ -271,6 +273,12 @@ def main():
          plt.title("Distance Sensor Readings vs Actual Distance Calibration")
          plt.legend()
          plt.show()
+   elif response == "7":
+      while True:
+        samples = 100
+        write_with_flush(f"READING\n{samples}\n")
+        voltage = read_line()
+        print(f"Reading from sensor, averaging {samples} samples: {voltage}")
    else:
       print("Error, response does not match one of the supported modes!")
 
