@@ -25,6 +25,20 @@
 Servo pan_sero;
 Servo tilt_servo;
 
+/* 
+ * The distance sensor tends to have voltage spikes every 100 micro second
+ * this functions takes several readings and then returns the minimum in order
+ * the help filter out the sudden spikes
+*/
+float read_distance_clean() {
+  float min_read = analogRead(DIST_SENSOR);
+  min_read = min(min_read, analogRead(DIST_SENSOR));
+  min_read = min(min_read, analogRead(DIST_SENSOR));
+  min_read = min(min_read, analogRead(DIST_SENSOR));
+  min_read = min(min_read, analogRead(DIST_SENSOR));
+  return min_read;
+}
+
 /*
  * Write to serial using printf formatting string
  * Example: print_format("a:%d, b:%d", a, b)
@@ -94,8 +108,8 @@ void loop()
     else if(command.equals("READING")) {
       int samples = block_read_line_string().toInt();
       float reading_total = 0;
-      for(int i=0; i<samples;i ++) {
-        reading_total += analogRead(DIST_SENSOR);
+      for(int i=0; i<samples; i++) {
+        reading_total += read_distance_clean();
         delay(1);
       }
       float reading_avg = reading_total / samples;
