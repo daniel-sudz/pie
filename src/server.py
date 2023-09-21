@@ -215,7 +215,7 @@ def main():
              for line in scan_data_lines)
           scan_data_pan_tilt_distance = list((v[0], v[1], voltage_to_distance_func(v[2])) for v in scan_data_pan_tilt_voltage)
           # filter out data points that are too far away from the sensor
-          scan_data_pan_tilt_distance = list(v for v in scan_data_pan_tilt_distance if (v[2] < 20))
+          # scan_data_pan_tilt_distance = list(v for v in scan_data_pan_tilt_distance if (v[2] < 20))
           for v in scan_data_pan_tilt_distance:
              print(v) 
           
@@ -227,9 +227,9 @@ def main():
           fig = plt.figure()
           ax = fig.add_subplot(projection='3d')
           ax.set_box_aspect([1,1,1])
-          ax.axes.set_xlim3d(left=0, right=20) 
-          ax.axes.set_ylim3d(bottom=0, top=20) 
-          ax.axes.set_zlim3d(bottom=0, top=20) 
+          ax.axes.set_xlim3d(left=0, right=50) 
+          ax.axes.set_ylim3d(bottom=0, top=50) 
+          ax.axes.set_zlim3d(bottom=0, top=50) 
           ax.scatter(
              list(v[0] for v in scan_data_x_y_z_distance), 
              list(v[1] for v in scan_data_x_y_z_distance),
@@ -279,11 +279,12 @@ def main():
          plt.legend()
          plt.show()
    elif response == "7":
+      voltage_to_distance_func = read_calibration_data()[0]
       while True:
         samples = 100
         write_with_flush(f"READING\n{samples}\n")
         voltage = read_line()
-        print(f"Reading from sensor, averaging {samples} samples: {voltage}")
+        print(f"Reading from sensor, averaging {samples} voltage: {voltage}, distance: {voltage_to_distance_func(float(voltage))}")
    else:
       print("Error, response does not match one of the supported modes!")
 
