@@ -16,6 +16,7 @@ Adafruit_DCMotor motor_right = *AFMS.getMotor(2);
 float left_sensor = 0;
 float right_sensor = 0;
 float last_serial_time = millis();
+float last_serial_command_time = millis();
 
 /* GLOBAL STATE */
 
@@ -71,13 +72,22 @@ void send_sensor_readings() {
   }
 }
 
+void send_commands(float left_command, float right_command) {
+  if(Serial.availableForWrite() && ((millis() - last_serial_command_time) > 500)) {
+    Serial.println("COMMANDS");
+    Serial.println(left_command);
+    Serial.println(right_command);
+    last_serial_command_time = millis();
+  }
+}
+
 void setup() {
   // start the serial port, must match the server!!!
   Serial.begin(115200);
 
-  // set the PID constants
-  leftPID.derivitive_gain = 0;
-  rightPID.derivitive_gain = 0;
+  // set the PID constants 
+  leftPID.derivitive_gain = 0; 
+  rightPID.derivitive_gain = 0; 
 
   leftPID.integrator_gain = 0;
   rightPID.integrator_gain = 0;
@@ -96,15 +106,25 @@ void setup() {
 }
 
 void loop() {
+  // reads down to zero when black and around 1000 when white
+  float no_tape_reading = 200;
   read_sensor_readings();
+
+  // send back debug info
   send_sensor_readings();
 
   // update the PID
-  float left_pid_res = leftPID.update(left_sensor, left_sensor);
-  float right_pid_res rightPID.update(right_sensor, right_sensor);
+  float left_pid_res = leftPID.update(left_sensor - no_tape_reading, left_sensor);
+  float right_pid_res = rightPID.update(right_sensor - no_tape_reading, right_sensor);
 
   // send the motor commands
   // range is [0 - 65,536]
-  motor_left.setSpeedFine(min(left_pid_res, UINT16_MAX));
-  motor_right.setSpeedFine(min(right_pid_res, UINT16_MAX));
+  float left_command = max(left_pid_res, 0.0);
+  float right_command = max(right_pid_res, 0.0);
+
+  send_commands(left_command, right_command);
+
+  //motor_left.setSpeedFine(left_command);
+  //motor_right.setSpeedFine(right_command);
+
 }

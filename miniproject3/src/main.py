@@ -30,9 +30,19 @@ def write_with_flush(str: str):
 def read_line():
    return serialPort.readline().decode("ascii").strip()
 
+# debug variables
+left_reading = 0
+right_reading = 0
+left_cmd = 0
+right_cmd = 0
+
 while(True):
    info = read_line()
    if(info == "READINGS"):
       left_reading = float(read_line())
       right_reading = float(read_line())
-      print(f"Left reading {left_reading}, right reading: {right_reading}")
+   elif(info == "COMMANDS"):
+      left_cmd = float(read_line())
+      right_cmd = float(read_line())
+   print(f"Left reading {left_reading}, right reading: {right_reading}, Left cmd {left_cmd}, right cmd: {right_cmd}")
+
