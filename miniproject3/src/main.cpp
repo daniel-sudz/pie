@@ -23,7 +23,7 @@ float last_serial_command_time = millis();
 /* Based on implementation from https://www.wescottdesign.com/articles/pid/pidWithoutAPhd.pdf */
 struct PidState {
   // proportional
-  float proportional_gain = 0;
+  float proportional_gain = 50;
   // integral
   float integrator_state = 0;
   float integrator_min = 0;
@@ -84,25 +84,6 @@ void send_commands(float left_command, float right_command) {
 void setup() {
   // start the serial port, must match the server!!!
   Serial.begin(115200);
-
-  // set the PID constants 
-  leftPID.derivitive_gain = 0; 
-  rightPID.derivitive_gain = 0; 
-
-  leftPID.integrator_gain = 0;
-  rightPID.integrator_gain = 0;
-
-  leftPID.integrator_min = 200;
-  rightPID.integrator_min = 200;
-
-  leftPID.integrator_max = 200;
-  rightPID.integrator_max = 200;
-
-  leftPID.integrator_state = 0;
-  rightPID.integrator_state = 0;
-
-  leftPID.proportional_gain = 10;
-  rightPID.proportional_gain = 10;
 }
 
 void loop() {
@@ -119,8 +100,9 @@ void loop() {
 
   // send the motor commands
   // range is [0 - 65,536]
-  float left_command = max(left_pid_res, 0.0);
-  float right_command = max(right_pid_res, 0.0);
+  float max_command = UINT16_MAX;
+  float left_command = max(min(max_command - left_pid_res, max_command), 0.0);  
+  float right_command = max(min(max_command - right_pid_res, max_command), 0.0);
 
   send_commands(left_command, right_command);
 
