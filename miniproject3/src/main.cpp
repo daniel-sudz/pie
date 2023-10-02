@@ -10,7 +10,14 @@
 
 /* GLOBAL STATE */
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
-Adafruit_DCMotor motor1 = *AFMS.getMotor(1);
+Adafruit_DCMotor motor_left = *AFMS.getMotor(1);
+Adafruit_DCMotor motor_right = *AFMS.getMotor(2);
+
+float left_sensor = 0;
+float right_sensor = 0;
+float last_serial_time = millis();
+
+/* GLOBAL STATE */
 
 /* Based on implementation from https://www.wescottdesign.com/articles/pid/pidWithoutAPhd.pdf */
 struct PidState {
@@ -45,18 +52,59 @@ struct PidState {
 
 };
 
-// put function declarations here:
-int myFunction(int, int);
+PidState leftPID;
+PidState rightPID;
+
+/* Reads the onboard sensors and saves them to global state */
+void read_sensor_readings() {
+  left_sensor = analogRead(A0);
+  right_sensor = analogRead(A1);
+}
+
+/* Send the sensor readings over serial */
+void send_sensor_readings() {
+  if(Serial.availableForWrite() && ((millis() - last_serial_time) > 500)) {
+    Serial.println("READINGS");
+    Serial.println(left_sensor);
+    Serial.println(right_sensor);
+    last_serial_time = millis();
+  }
+}
 
 void setup() {
-  // put your setup code here, to run once:
+  // start the serial port, must match the server!!!
+  Serial.begin(115200);
+
+  // set the PID constants
+  leftPID.derivitive_gain = 0;
+  rightPID.derivitive_gain = 0;
+
+  leftPID.integrator_gain = 0;
+  rightPID.integrator_gain = 0;
+
+  leftPID.integrator_min = 200;
+  rightPID.integrator_min = 200;
+
+  leftPID.integrator_max = 200;
+  rightPID.integrator_max = 200;
+
+  leftPID.integrator_state = 0;
+  rightPID.integrator_state = 0;
+
+  leftPID.proportional_gain = 10;
+  rightPID.proportional_gain = 10;
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+  read_sensor_readings();
+  send_sensor_readings();
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  // update the PID
+  float left_pid_res = leftPID.update(left_sensor, left_sensor);
+  float right_pid_res rightPID.update(right_sensor, right_sensor);
+
+  // send the motor commands
+  // range is [0 - 65,536]
+  motor_left.setSpeedFine(min(left_pid_res, UINT16_MAX));
+  motor_right.setSpeedFine(min(right_pid_res, UINT16_MAX));
 }
