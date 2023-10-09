@@ -8,6 +8,8 @@
 #include "utility/Adafruit_MS_PWMServoDriver.h"
 /*********************** THIRD PARTY DEPS ***********************/
 
+// 4 per float * (10 / second) * 4 variables = 160 bytes / second
+
 /* GLOBAL STATE */
 Adafruit_MotorShield AFMS = Adafruit_MotorShield(); 
 Adafruit_DCMotor motor_left = *AFMS.getMotor(2);
