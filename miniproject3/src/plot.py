@@ -28,7 +28,7 @@ def save_command_sensor_plot(time: [float], commands: [float], sensor: [float], 
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
 
-    ax1.plot(time, sensor, label = "Sensor Readings", color = "blue")
+    ax1.plot(time, sensor, label = "Sensors Readings", color = "blue")
     ax2.plot(time, commands, label = "Motor Commands", color = "purple")
     ax1.set_xlabel("Time (seconds)")
     
@@ -36,9 +36,9 @@ def save_command_sensor_plot(time: [float], commands: [float], sensor: [float], 
     ax1.yaxis.set_major_locator(plt.MaxNLocator(10))
     ax2.yaxis.set_major_locator(plt.MaxNLocator(10))
 
-    ax1.set_title(f'{"Left" if is_left else "Right"} Sensor and Motor Commands Over Time')
+    ax1.set_title(f'{"Left" if is_left else "Right"} Sensors and Motor Commands Over Time')
 
-    ax1.set_ylabel(f'{"Left" if is_left else "Right"} Sensor analogRead()', color='blue')
+    ax1.set_ylabel(f'{"Left" if is_left else "Right"} Sensors analogRead()', color='blue')
     ax2.set_ylabel(f'{"Left" if is_left else "Right"} Motor Command Sent', color='purple')
 
     fig.savefig(f'plots/{"left" if is_left else "right"}.png', dpi=1200)
