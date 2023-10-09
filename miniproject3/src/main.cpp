@@ -90,6 +90,7 @@ void send_commands(float left_command, float right_command) {
 void setup() {
   // start the serial port, must match the server!!!
   Serial.begin(115200);
+  Serial.setTimeout(1000ULL * 60ULL);
 
   // start the motor controller 
   AFMS.begin();
@@ -103,58 +104,57 @@ void setup() {
   // figure out the reflective baseline
   read_sensor_readings();
   sensor_baseline = (left_sensor + right_sensor) / 2;
+
+  // wait for python to connect
+  while(!Serial.available()) {}
+
+  // intitialize PID constants from python
+  speed_scale_factor = Serial.parseFloat();
+  float proportional_gain = Serial.parseFloat();
+  float integrator_gain = Serial.parseFloat();
+  float integrator_min = Serial.parseFloat();
+  float integrator_max = Serial.parseFloat();
+  float derivitive_gain = Serial.parseFloat();
+
+  leftPID.proportional_gain = proportional_gain;
+  rightPID.proportional_gain = proportional_gain;
+
+  leftPID.integrator_gain = integrator_gain;
+  rightPID.integrator_gain = integrator_gain;
+
+  leftPID.integrator_min = integrator_min;
+  rightPID.integrator_min = integrator_min;
+
+  leftPID.integrator_max = integrator_max;
+  rightPID.integrator_max = integrator_max;
+
+  leftPID.derivitive_gain = derivitive_gain;
+  rightPID.derivitive_gain = derivitive_gain;
 }
 
 void loop() {
-  // initialize constants from python
-  if((Serial.available())) {
-    speed_scale_factor = Serial.parseFloat();
-    float proportional_gain = Serial.parseFloat();
-    float integrator_gain = Serial.parseFloat();
-    float integrator_min = Serial.parseFloat();
-    float integrator_max = Serial.parseFloat();
-    float derivitive_gain = Serial.parseFloat();
+  // reads down to zero when black and around 1000 when white
+  read_sensor_readings();
 
-    leftPID.proportional_gain = proportional_gain;
-    rightPID.proportional_gain = proportional_gain;
+  // send back debug info
+  send_sensor_readings();
 
-    leftPID.integrator_gain = integrator_gain;
-    rightPID.integrator_gain = integrator_gain;
+  // update the PID
+  float left_pid_res = leftPID.update(left_sensor - sensor_baseline, left_sensor);
+  float right_pid_res = rightPID.update(right_sensor - sensor_baseline, right_sensor);
 
-    leftPID.integrator_min = integrator_min;
-    rightPID.integrator_min = integrator_min;
+  // send the motor commands
+  // range is [0 - 65,536]
+  float max_command = UINT16_MAX;
+  float left_command = max((min(max_command - left_pid_res, max_command) * speed_scale_factor * 1.2), 0.0);  
+  float right_command = max((min(max_command - right_pid_res, max_command) * speed_scale_factor), 0.0);
 
-    leftPID.integrator_max = integrator_max;
-    rightPID.integrator_max = integrator_max;
+  send_commands(left_command, right_command);
 
-    leftPID.derivitive_gain = derivitive_gain;
-    rightPID.derivitive_gain = derivitive_gain;
-  }
-  // main loop after initialized
-  else {
-    // reads down to zero when black and around 1000 when white
-    read_sensor_readings();
-
-    // send back debug info
-    send_sensor_readings();
-
-    // update the PID
-    float left_pid_res = leftPID.update(left_sensor - sensor_baseline, left_sensor);
-    float right_pid_res = rightPID.update(right_sensor - sensor_baseline, right_sensor);
-
-    // send the motor commands
-    // range is [0 - 65,536]
-    float max_command = UINT16_MAX;
-    float left_command = max((min(max_command - left_pid_res, max_command) * speed_scale_factor * 1.2), 0.0);  
-    float right_command = max((min(max_command - right_pid_res, max_command) * speed_scale_factor), 0.0);
-
-    send_commands(left_command, right_command);
-
-    // RUN!!! :)
-    
-    motor_left.setSpeedFine(left_command);
-    motor_right.setSpeedFine(right_command);
-    motor_left.run(FORWARD);
-    motor_right.run(FORWARD);
-  }
+  // RUN!!! :)
+  
+  motor_left.setSpeedFine(left_command);
+  motor_right.setSpeedFine(right_command);
+  motor_left.run(FORWARD);
+  motor_right.run(FORWARD);
 }

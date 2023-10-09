@@ -17,22 +17,17 @@ baudRate = 115200
 
 # Open the serial port
 print("WAITING for serial port to connect!")
-serialPort = serial.Serial(arduino_com_port, baudRate, timeout=5)
+serialPort = serial.Serial(arduino_com_port, baudRate, timeout=None)
 time.sleep(2) # bug in pyserial library returning before binding: https://stackoverflow.com/a/49429639
 
 # Writes to serial port and then flushes port
 def write_with_flush(str: str):
-  serialPort.write(bytes(str, "utf8"))
+  serialPort.write(bytes(str, "ascii"))
   serialPort.flush()
 
 # Read a line from serial
 def read_line():
    return serialPort.readline().decode("ascii").strip()
-
-# writes to serial port and then flushes port
-def write_with_flush(str: str):
-  serialPort.write(bytes(str, "utf8"))
-  serialPort.flush()
 
 # debug variables
 left_reading = 0
@@ -46,12 +41,13 @@ data_file_name = os.environ.get("PLOT") or "plot1.data"
 data_file_path = Path(__file__).parent / "data" / data_file_name
 
 # send the PID constants to the car
-write_with_flush("0.005" + "\n")       # speed scale constant
-write_with_flush("400" + "\n")         # proportional_gain
-write_with_flush("0" + "\n")           # integrator_gain
-write_with_flush("0" + "\n")           # integrator_min
-write_with_flush("0" + "\n")           # integrator_max
-write_with_flush("0" + "\n")           # derivitive_gain
+speed_scale_constant = 0.005
+proportional_gain = 400
+integrator_gain = 0.0
+integrator_min = 0.0
+integrator_max = 0.0
+derivitive_gain = 0.0
+write_with_flush(f"{speed_scale_constant} {proportional_gain} {integrator_gain} {integrator_min} {integrator_max} {integrator_min}" + "\n")
 
 with open(data_file_path.as_posix(), "wt") as save_file: 
    # disable annoying stack trace on ctrl+c 
