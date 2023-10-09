@@ -10,9 +10,11 @@ plot_file_contents = plot_file_path.read_text().splitlines()
 # group into sensors and commands 
 plot_contents_left_sensor_1 = list(float(line.split(",")[0]) for line in plot_file_contents)
 plot_contents_left_sensor_2 = list(float(line.split(",")[1]) for line in plot_file_contents)
+plot_contents_left_sensor_avg = list((x + y) / 2 for x,y in zip(plot_contents_left_sensor_1, plot_contents_left_sensor_2))
 
 plot_contents_right_sensor_1 = list(float(line.split(",")[2]) for line in plot_file_contents)
 plot_contents_right_sensor_2 = list(float(line.split(",")[3]) for line in plot_file_contents)
+plot_contents_right_sensor_avg = list((x + y) / 2 for x,y in zip(plot_contents_right_sensor_1, plot_contents_right_sensor_2))
 
 # group into motor commands
 plot_contents_left_command = list(float(line.split(",")[4]) for line in plot_file_contents)
@@ -57,6 +59,6 @@ def save_sensor_vs_sensor_plot(time: [float], sensor1: [float], sensor2: [float]
     
 
 # save plots for both sides
-save_command_sensor_plot(plot_contents_timestamps, plot_contents_left_command, plot_contents_left_sensor_1, True)
-save_command_sensor_plot(plot_contents_timestamps, plot_contents_right_command, plot_contents_right_sensor_1, False)
-save_sensor_vs_sensor_plot(plot_contents_timestamps, plot_contents_left_sensor_1, plot_contents_right_sensor_1)
+save_command_sensor_plot(plot_contents_timestamps, plot_contents_left_command, plot_contents_left_sensor_avg, True)
+save_command_sensor_plot(plot_contents_timestamps, plot_contents_right_command, plot_contents_right_sensor_avg, False)
+save_sensor_vs_sensor_plot(plot_contents_timestamps, plot_contents_left_sensor_avg, plot_contents_right_sensor_avg)
