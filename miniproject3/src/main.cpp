@@ -15,9 +15,14 @@ Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor motor_left = *AFMS.getMotor(2);
 Adafruit_DCMotor motor_right = *AFMS.getMotor(1);
 
-float sensor_baseline = 0;
-float left_sensor = 0;
-float right_sensor = 0;
+float left_sensor_1 = 0;
+float baseline_left_sensor_1 = 0;
+float left_sensor_2 = 0;
+float baseline_left_sensor_2 = 0;
+float right_sensor_1 = 0;
+float baseline_right_sensor_1 = 0;
+float right_sensor_2 = 0;
+float baseline_right_sensor_2 = 0;
 float last_serial_time = millis();
 float last_serial_command_time = millis();
 float speed_scale_factor = 0;
@@ -64,16 +69,21 @@ PidState rightPID;
 
 /* Reads the onboard sensors and saves them to global state */
 void read_sensor_readings() {
-  left_sensor = analogRead(A1);
-  right_sensor = analogRead(A0);
+  left_sensor_1 = analogRead(A1);
+  right_sensor_1 = analogRead(A0);
+
+  left_sensor_2 = analogRead(A2);
+  right_sensor_2 = analogRead(A3);
 }
 
 /* Send the sensor readings over serial */
 void send_sensor_readings() {
-  if(Serial.availableForWrite() && ((millis() - last_serial_time) > 500)) {
+  if(Serial.availableForWrite()) {
     Serial.println("READINGS");
-    Serial.println(left_sensor);
-    Serial.println(right_sensor);
+    Serial.println(left_sensor_1);
+    Serial.println(left_sensor_2);
+    Serial.println(right_sensor_1);
+    Serial.println(right_sensor_2);
     last_serial_time = millis();
   }
 }
@@ -101,10 +111,6 @@ void setup() {
   motor_left.run(FORWARD);
   motor_right.run(FORWARD);
 
-  // figure out the reflective baseline
-  read_sensor_readings();
-  sensor_baseline = (left_sensor + right_sensor) / 2;
-
   // wait for python to connect
   while(!Serial.available()) {}
 
@@ -130,6 +136,13 @@ void setup() {
 
   leftPID.derivitive_gain = derivitive_gain;
   rightPID.derivitive_gain = derivitive_gain;
+
+  // figure out the reflective baseline
+  read_sensor_readings();
+  baseline_left_sensor_1 = left_sensor_1;
+  baseline_left_sensor_2 = left_sensor_2;
+  baseline_right_sensor_1 = right_sensor_1;
+  baseline_right_sensor_2 = right_sensor_2;
 }
 
 void loop() {
@@ -140,21 +153,34 @@ void loop() {
   send_sensor_readings();
 
   // update the PID
-  float left_pid_res = leftPID.update(left_sensor - sensor_baseline, left_sensor);
-  float right_pid_res = rightPID.update(right_sensor - sensor_baseline, right_sensor);
+  float left_average = (left_sensor_1 + left_sensor_2) / 2;
+  float left_average_diff = ((left_sensor_1 - baseline_left_sensor_1) + (left_sensor_2 - baseline_left_sensor_2)) / 2;
+
+  float right_average = (right_sensor_1 + right_sensor_2) / 2;
+  float right_average_diff = ((right_sensor_1 - baseline_right_sensor_1) + (right_sensor_2 - baseline_right_sensor_2)) / 2;
+
+  float left_pid_res = leftPID.update(left_average_diff, left_average);
+  float right_pid_res = rightPID.update(right_average_diff, right_average);
 
   // send the motor commands
   // range is [0 - 65,536]
   float max_command = UINT16_MAX;
-  float left_command = max((min(max_command - left_pid_res, max_command) * speed_scale_factor * 1.2), 0.0);  
-  float right_command = max((min(max_command - right_pid_res, max_command) * speed_scale_factor), 0.0);
+  float left_command = max((min(max_command - left_pid_res, max_command) * speed_scale_factor), 0.0);  
+  float right_command = max((min(max_command - right_pid_res, max_command) * speed_scale_factor * 1.1), 0.0);
 
+  if(left_command > 0) {
+    left_command = max(left_command, 300);
+  }
+  if (right_command > 0) {
+    right_command = max(right_command, 300);
+  }
+    
   send_commands(left_command, right_command);
 
   // RUN!!! :)
-  
+
   motor_left.setSpeedFine(left_command);
   motor_right.setSpeedFine(right_command);
-  motor_left.run(FORWARD);
-  motor_right.run(FORWARD);
+  motor_left.run(BACKWARD);
+  motor_right.run(BACKWARD);
 }

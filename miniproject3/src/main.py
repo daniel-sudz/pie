@@ -30,8 +30,10 @@ def read_line():
    return serialPort.readline().decode("ascii").strip()
 
 # debug variables
-left_reading = 0
-right_reading = 0
+left_reading_1 = 0
+left_reading_2 = 0
+right_reading_1 = 0
+right_reading_2 = 0
 left_cmd = 0
 right_cmd = 0
 start_time = time.time()
@@ -41,8 +43,8 @@ data_file_name = os.environ.get("PLOT") or "plot1.data"
 data_file_path = Path(__file__).parent / "data" / data_file_name
 
 # send the PID constants to the car
-speed_scale_constant = 0.005
-proportional_gain = 400
+speed_scale_constant = 0.01
+proportional_gain = 600
 integrator_gain = 0.0
 integrator_min = 0.0
 integrator_max = 0.0
@@ -56,11 +58,13 @@ with open(data_file_path.as_posix(), "wt") as save_file:
    while(True):
       info = read_line()
       if(info == "READINGS"):
-         left_reading = round(float(read_line()))
-         right_reading = round(float(read_line()))
+         left_reading_1 = round(float(read_line()))
+         left_reading_2 = round(float(read_line()))
+         right_reading_1 = round(float(read_line()))
+         right_reading_2 = round(float(read_line()))
       elif(info == "COMMANDS"):
          left_cmd = round(float(read_line()))
          right_cmd = round(float(read_line()))
       cur_time = round(time.time() - start_time, 1)
-      save_file.write(f'{left_reading}, {right_reading}, {left_cmd}, {right_cmd}, {cur_time}\n')
-      print(f"Left reading {left_reading}, right reading: {right_reading}, Left cmd {left_cmd}, right cmd: {right_cmd}, time: {cur_time}")
+      save_file.write(f'{left_reading_1}, {left_reading_2}, {right_reading_1}, {right_reading_2}, {left_cmd}, {right_cmd}, {cur_time}\n')
+      print(f"Left reading {left_reading_1} / {left_reading_2}, right reading: {right_reading_1} / {right_reading_2}, Left cmd {left_cmd}, right cmd: {right_cmd}, time: {cur_time}")
