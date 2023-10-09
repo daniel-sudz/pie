@@ -69,10 +69,10 @@ PidState rightPID;
 
 /* Reads the onboard sensors and saves them to global state */
 void read_sensor_readings() {
-  left_sensor_1 = analogRead(A1);
-  right_sensor_1 = analogRead(A0);
+  left_sensor_1 = analogRead(A0);
+  right_sensor_1 = analogRead(A2);
 
-  left_sensor_2 = analogRead(A2);
+  left_sensor_2 = analogRead(A1);
   right_sensor_2 = analogRead(A3);
 }
 
