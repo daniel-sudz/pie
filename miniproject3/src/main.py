@@ -44,7 +44,7 @@ data_file_path = Path(__file__).parent / "data" / data_file_name
 
 # send the PID constants to the car
 speed_scale_constant = 0.0070
-proportional_gain = 900
+proportional_gain = 1050
 integrator_gain = 0.0
 integrator_min = 0.0
 integrator_max = 0.0
