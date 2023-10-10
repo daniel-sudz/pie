@@ -151,14 +151,14 @@ void setup() {
   rightPID.derivitive_gain = derivitive_gain;
 }
 
-float get_left_speed(float left_diff_1) {
-    float left_pid_res = leftPID.update(left_diff_1, left_sensor_1);
+float get_left_speed(float left_diff, float left_sensor) {
+    float left_pid_res = leftPID.update(left_diff, left_sensor);
     float left_command = max((min(max_command - left_pid_res, max_command) * speed_scale_factor), 0);
     return left_command;
 }
 
-float get_right_speed(float right_diff_1) {
-    float right_pid_res = rightPID.update(right_diff_1, right_sensor_1);
+float get_right_speed(float right_diff, float right_sensor) {
+    float right_pid_res = rightPID.update(right_diff, right_sensor);
     float right_command = max((min(max_command - right_pid_res, max_command) * speed_scale_factor), 0);
     return right_command;
 }
@@ -181,7 +181,9 @@ void loop() {
 
   float left_pid_res, right_pid_res, left_command, right_command;
 
-  if(get_left_speed(left_diff_1) == 0 && get_right_speed(right_diff_1) == 0) {
+  if((get_left_speed(left_diff_1, left_sensor_1) == 0 && get_left_speed(left_diff_2, left_sensor_2) == 0) || 
+    (get_right_speed(right_diff_1, right_sensor_1) == 0 && get_right_speed(right_diff_2, right_sensor_2) == 0)
+  ) {
     left_pid_res = leftPID.update(left_diff_2, left_sensor_2);
     right_pid_res = rightPID.update(right_diff_2, right_sensor_2);
     if(left_pid_res < right_pid_res) {
@@ -197,18 +199,26 @@ void loop() {
 
     // set a floor on the command
     /*
-    if(left_command > 0) {
-      left_command = max(left_command, 250);
-    }
-    if (right_command > 0) {
-      right_command = max(right_command, 250);
-    }
     */
 
   }
   else {
-    left_command = get_left_speed(left_diff_1);
-    right_command = get_right_speed(right_diff_1);
+    left_command = get_left_speed(left_diff_1, left_sensor_1);
+    right_command = get_right_speed(right_diff_1, right_sensor_1);
+
+    if(left_command > 0) {
+      left_command = max(left_command, 275);
+    }
+    if (right_command > 0) {
+      right_command = max(right_command, 275);
+    }
+
+    if(left_command == 0 && right_command == 0) {
+      left_command = 350;
+      right_command = 350;
+      delay(100);
+    }
+
     cur_mode = 0;
   }
 
