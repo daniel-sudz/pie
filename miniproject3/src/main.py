@@ -43,12 +43,13 @@ data_file_name = os.environ.get("PLOT") or "plot1.data"
 data_file_path = Path(__file__).parent / "data" / data_file_name
 
 # send the PID constants to the car
-speed_scale_constant = 0.01
-proportional_gain = 600
+speed_scale_constant = 0.0070
+proportional_gain = 900
 integrator_gain = 0.0
 integrator_min = 0.0
 integrator_max = 0.0
 derivitive_gain = 0.0
+cur_mode = 0.0
 write_with_flush(f"{speed_scale_constant} {proportional_gain} {integrator_gain} {integrator_min} {integrator_max} {integrator_min}" + "\n")
 
 with open(data_file_path.as_posix(), "wt") as save_file: 
@@ -62,9 +63,10 @@ with open(data_file_path.as_posix(), "wt") as save_file:
          left_reading_2 = round(float(read_line()))
          right_reading_1 = round(float(read_line()))
          right_reading_2 = round(float(read_line()))
+         cur_mode = round(float(read_line()))
       elif(info == "COMMANDS"):
          left_cmd = round(float(read_line()))
          right_cmd = round(float(read_line()))
       cur_time = round(time.time() - start_time, 1)
       save_file.write(f'{left_reading_1}, {left_reading_2}, {right_reading_1}, {right_reading_2}, {left_cmd}, {right_cmd}, {cur_time}\n')
-      print(f"Left reading {left_reading_1} / {left_reading_2}, right reading: {right_reading_1} / {right_reading_2}, Left cmd {left_cmd}, right cmd: {right_cmd}, time: {cur_time}")
+      print(f"Mode: {cur_mode}, Left reading {left_reading_1} / {left_reading_2}, right reading: {right_reading_1} / {right_reading_2}, Left cmd {left_cmd}, right cmd: {right_cmd}, time: {cur_time}")

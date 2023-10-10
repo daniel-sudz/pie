@@ -26,6 +26,11 @@ float baseline_right_sensor_2 = 0;
 float last_serial_time = millis();
 float last_serial_command_time = millis();
 float speed_scale_factor = 0;
+float cur_mode = 0;
+
+
+// range is [0 - 65,536]
+float max_command = UINT16_MAX;
 
 /* GLOBAL STATE */
 
@@ -69,10 +74,10 @@ PidState rightPID;
 
 /* Reads the onboard sensors and saves them to global state */
 void read_sensor_readings() {
-  left_sensor_1 = analogRead(A0);
-  right_sensor_1 = analogRead(A2);
+  left_sensor_1 = analogRead(A1);
+  left_sensor_2 = analogRead(A0);
 
-  left_sensor_2 = analogRead(A1);
+  right_sensor_1 = analogRead(A2);
   right_sensor_2 = analogRead(A3);
 }
 
@@ -84,6 +89,7 @@ void send_sensor_readings() {
     Serial.println(left_sensor_2);
     Serial.println(right_sensor_1);
     Serial.println(right_sensor_2);
+    Serial.println(cur_mode);
     last_serial_time = millis();
   }
 }
@@ -111,6 +117,13 @@ void setup() {
   motor_left.run(FORWARD);
   motor_right.run(FORWARD);
 
+  // figure out the reflective baseline
+  read_sensor_readings();
+  baseline_left_sensor_1 = left_sensor_1;
+  baseline_left_sensor_2 = left_sensor_2;
+  baseline_right_sensor_1 = right_sensor_1;
+  baseline_right_sensor_2 = right_sensor_2;
+
   // wait for python to connect
   while(!Serial.available()) {}
 
@@ -136,13 +149,18 @@ void setup() {
 
   leftPID.derivitive_gain = derivitive_gain;
   rightPID.derivitive_gain = derivitive_gain;
+}
 
-  // figure out the reflective baseline
-  read_sensor_readings();
-  baseline_left_sensor_1 = left_sensor_1;
-  baseline_left_sensor_2 = left_sensor_2;
-  baseline_right_sensor_1 = right_sensor_1;
-  baseline_right_sensor_2 = right_sensor_2;
+float get_left_speed(float left_diff_1) {
+    float left_pid_res = leftPID.update(left_diff_1, left_sensor_1);
+    float left_command = max((min(max_command - left_pid_res, max_command) * speed_scale_factor), 0);
+    return left_command;
+}
+
+float get_right_speed(float right_diff_1) {
+    float right_pid_res = rightPID.update(right_diff_1, right_sensor_1);
+    float right_command = max((min(max_command - right_pid_res, max_command) * speed_scale_factor), 0);
+    return right_command;
 }
 
 void loop() {
@@ -152,35 +170,68 @@ void loop() {
   // send back debug info
   send_sensor_readings();
 
+
+
   // update the PID
-  float left_average = (left_sensor_1 + left_sensor_2) / 2;
-  float left_average_diff = ((left_sensor_1 - baseline_left_sensor_1) + (left_sensor_2 - baseline_left_sensor_2)) / 2;
+  float left_diff_1 = (left_sensor_1 - baseline_left_sensor_1);
+  float left_diff_2 = (left_sensor_2 - baseline_left_sensor_2);
 
-  float right_average = (right_sensor_1 + right_sensor_2) / 2;
-  float right_average_diff = ((right_sensor_1 - baseline_right_sensor_1) + (right_sensor_2 - baseline_right_sensor_2)) / 2;
+  float right_diff_1 = (right_sensor_1 - baseline_right_sensor_1);
+  float right_diff_2 = (right_sensor_2 - baseline_right_sensor_2);
 
-  float left_pid_res = leftPID.update(left_average_diff, left_average);
-  float right_pid_res = rightPID.update(right_average_diff, right_average);
+  float left_pid_res, right_pid_res, left_command, right_command;
+
+  if(get_left_speed(left_diff_1) == 0 && get_right_speed(right_diff_1) == 0) {
+    left_pid_res = leftPID.update(left_diff_2, left_sensor_2);
+    right_pid_res = rightPID.update(right_diff_2, right_sensor_2);
+    if(left_pid_res < right_pid_res) {
+      left_command = 370;
+      right_command = -370;
+    }
+    else {
+      left_command = -370;
+      right_command = 370;
+    }
+
+    cur_mode = 1;
+
+    // set a floor on the command
+    /*
+    if(left_command > 0) {
+      left_command = max(left_command, 250);
+    }
+    if (right_command > 0) {
+      right_command = max(right_command, 250);
+    }
+    */
+
+  }
+  else {
+    left_command = get_left_speed(left_diff_1);
+    right_command = get_right_speed(right_diff_1);
+    cur_mode = 0;
+  }
 
   // send the motor commands
-  // range is [0 - 65,536]
-  float max_command = UINT16_MAX;
-  float left_command = max((min(max_command - left_pid_res, max_command) * speed_scale_factor), 0.0);  
-  float right_command = max((min(max_command - right_pid_res, max_command) * speed_scale_factor * 1.1), 0.0);
-
-  if(left_command > 0) {
-    left_command = max(left_command, 300);
-  }
-  if (right_command > 0) {
-    right_command = max(right_command, 300);
-  }
-    
   send_commands(left_command, right_command);
 
   // RUN!!! :)
 
-  motor_left.setSpeedFine(left_command);
-  motor_right.setSpeedFine(right_command);
-  motor_left.run(BACKWARD);
-  motor_right.run(BACKWARD);
+  motor_left.setSpeedFine(abs(left_command));
+  motor_right.setSpeedFine(abs(right_command));
+
+  if(left_command >= 0) {
+    motor_left.run(BACKWARD);
+  }
+  else {
+    motor_left.run(FORWARD);
+  }
+
+  if(right_command >= 0) {
+    motor_right.run(BACKWARD);
+  }
+  else {
+    motor_right.run(FORWARD);
+  }
+  
 }
