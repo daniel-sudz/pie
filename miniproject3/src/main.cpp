@@ -187,12 +187,12 @@ void loop() {
     left_pid_res = leftPID.update(left_diff_2, left_sensor_2);
     right_pid_res = rightPID.update(right_diff_2, right_sensor_2);
     if(left_pid_res < right_pid_res) {
-      left_command = 370;
-      right_command = -400;
+      left_command = 450;
+      right_command = -375;
     }
     else {
-      left_command = -400;
-      right_command = 370;
+      left_command = -375;
+      right_command = 450;
     }
 
     cur_mode = 1;

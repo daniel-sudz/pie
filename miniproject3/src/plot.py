@@ -59,6 +59,6 @@ def save_sensor_vs_sensor_plot(time: [float], sensor1: [float], sensor2: [float]
     
 
 # save plots for both sides
-save_command_sensor_plot(plot_contents_timestamps, plot_contents_left_command, plot_contents_left_sensor_avg, True)
-save_command_sensor_plot(plot_contents_timestamps, plot_contents_right_command, plot_contents_right_sensor_avg, False)
+save_command_sensor_plot(plot_contents_timestamps, plot_contents_left_command, plot_contents_left_sensor_1, True)
+save_command_sensor_plot(plot_contents_timestamps, plot_contents_right_command, plot_contents_right_sensor_1, False)
 save_sensor_vs_sensor_plot(plot_contents_timestamps, plot_contents_left_sensor_avg, plot_contents_right_sensor_avg)
