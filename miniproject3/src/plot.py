@@ -21,44 +21,33 @@ plot_contents_left_command = list(float(line.split(",")[4]) for line in plot_fil
 plot_contents_right_command = list(float(line.split(",")[5]) for line in plot_file_contents)
 
 # get timestamps 
-plot_contents_timestamps= list(float(line.split(",")[4]) for line in plot_file_contents)
+plot_contents_timestamps= list(float(line.split(",")[6]) for line in plot_file_contents)
 
 # creates and saves a plot of sensors and commands vs time for a specific side 
-def save_command_sensor_plot(time: [float], commands: [float], sensor: [float], is_left: bool):
+def save_command_sensor_plot(time: [float], command_left: [float], sensor_left: [float], command_right: [float], sensor_right: [float]):
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
 
-    ax1.plot(time, sensor, label = "Sensors Readings", color = "blue")
-    ax2.plot(time, commands, label = "Motor Commands", color = "purple")
+    ax1.plot(time, sensor_left, label = "Left Sensor Reading", color = "blue")
+    ax1.plot(time, sensor_right, label = "Right Sensor Reading", color = "orange")
+    leg1 = ax1.legend(bbox_to_anchor=(1.625, 1.05))
+    
+    ax2.plot(time, command_left, label = "Left Motor Command", color = "purple")
+    ax2.plot(time, command_right, label = "Right Motor Command", color = "green")
+    leg2 = ax2.legend(bbox_to_anchor=(1.2, 0.80))
+
     ax1.set_xlabel("Time (seconds)")
     
     ax1.xaxis.set_major_locator(plt.MaxNLocator(10))
     ax1.yaxis.set_major_locator(plt.MaxNLocator(10))
     ax2.yaxis.set_major_locator(plt.MaxNLocator(10))
 
-    ax1.set_title(f'{"Left" if is_left else "Right"} Sensors and Motor Commands Over Time')
+    ax1.set_title('Left/Right Inner Sensors and Motor Commands Over Time')
 
-    ax1.set_ylabel(f'{"Left" if is_left else "Right"} Sensors analogRead()', color='blue')
-    ax2.set_ylabel(f'{"Left" if is_left else "Right"} Motor Command Sent', color='purple')
+    ax1.set_ylabel('Inner Sensor analogRead()')
+    ax2.set_ylabel('Left/Right Motor Command Sent')
 
-    fig.savefig(f'plots/{"left" if is_left else "right"}.png', dpi=1200)
-
-def save_sensor_vs_sensor_plot(time: [float], sensor1: [float], sensor2: [float]):
-    fig = plt.figure()
-
-    plt.plot(time, sensor1, label = "Left", color = "blue")
-    plt.plot(time, sensor2, label = "Right", color = "red")
-
-    plt.legend()
-
-    plt.xlabel("Time (seconds)")
-    
-
-    fig.savefig(f'plots/sensors.png', dpi=1200)
-    plt.show()
-    
+    ax1.set_xlim(left=0, right=15)
 
 # save plots for both sides
-save_command_sensor_plot(plot_contents_timestamps, plot_contents_left_command, plot_contents_left_sensor_1, True)
-save_command_sensor_plot(plot_contents_timestamps, plot_contents_right_command, plot_contents_right_sensor_1, False)
-save_sensor_vs_sensor_plot(plot_contents_timestamps, plot_contents_left_sensor_avg, plot_contents_right_sensor_avg)
+save_command_sensor_plot(plot_contents_timestamps, plot_contents_left_command, plot_contents_left_sensor_1,plot_contents_right_command, plot_contents_right_sensor_1)
