@@ -5,7 +5,6 @@
 
 #include "../out/_deps/sdl2-src/include/SDL.h"
 #include "AudioFile.h"
-
 /*
    Some helpers for abstracting away playing raw audio on two channels (X,Y)
    Uses the SLD2 video/audio library to be cross-platform
