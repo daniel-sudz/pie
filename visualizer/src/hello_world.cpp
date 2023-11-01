@@ -1,10 +1,15 @@
+#include <fcntl.h>
+#include <termios.h>
+#include <unistd.h>
+
 #include <chrono>
+#include <filesystem>
 #include <iostream>
 #include <string>
-#include <thread>
 
 #include "../out/_deps/sdl2-src/include/SDL.h"
 #include "AudioFile.h"
+
 /*
    Some helpers for abstracting away playing raw audio on two channels (X,Y)
    Uses the SLD2 video/audio library to be cross-platform
@@ -115,10 +120,33 @@ struct RawAudioPlayer {
   }
 };
 
+struct Serial {
+  /* returns the path to the arduino serial file */
+  std::string get_arduino_serial() {
+    std::string arduino_serial;
+    for (const auto& entry : std::filesystem::directory_iterator("/dev")) {
+      std::string device_name = entry.path().generic_string();
+      if (device_name.find("tty.usbmodem") != std::string::npos) {
+        arduino_serial = device_name;
+      }
+    };
+    if (arduino_serial.empty()) {
+      std::cerr << "failed to find arduino serial port" << std::endl;
+      exit(1);
+    }
+    std::cout << "located arduino serial port at " << arduino_serial << std::endl;
+    return arduino_serial;
+  }
+};
+
 int main() {
   AudioFile<double> audioFile;
 
+  Serial serial;
+  serial.get_arduino_serial();
+
   RawAudioPlayer audio_player;
+  /*
   while (true) {
     audio_player.queue_audio(std::vector<float>(1000, 10),
                              std::vector<float>(1000, 10));
@@ -127,6 +155,7 @@ int main() {
     // don't burn the CPU too much
     // std::this_thread::sleep_for (std::chrono::milliseconds(10));
   }
+  */
 
   return 0;
 }
