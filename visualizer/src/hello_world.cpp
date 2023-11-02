@@ -122,14 +122,14 @@ struct RawAudioPlayer {
 
 struct Serial {
   /* file descriptor for arduino serial */
-  int serial_descriptor = -1;
+  boost::asio::io_service io;
+  boost::asio::serial_port arduino_serial_port;
 
   /* current data we have read */
   std::string read_buffer;
 
   /* returns the path to the arduino serial file */
-  std::string
-  get_arduino_serial() {
+  std::string get_arduino_serial() {
     std::string arduino_serial;
     for (const auto& entry : std::filesystem::directory_iterator("/dev")) {
       std::string device_name = entry.path().generic_string();
@@ -157,26 +157,18 @@ struct Serial {
 
   /* read a line from the arduino serial */
   std::string read_line() {
-    std::cout << "hi " << std::endl;
-    char tmp_buffer[10000];
-    int bytes_read = read(serial_descriptor, tmp_buffer, sizeof(tmp_buffer));
-    std::cout << "read " << bytes_read << std::endl;
-    for (char c : std::string(tmp_buffer, bytes_read)) {
-      std::cout << "read_char " << c << std::endl;
+    std::vector<char> tmp_buffer(1000);
+    size_t bytes_read = arduino_serial_port.read_some(boost::asio::buffer(tmp_buffer));
+    for (int i = 0; i < bytes_read; i++) {
+      std::cout << tmp_buffer[i] << " ";
     }
     return "";
   }
 
   /* initialize the serial communication */
-  Serial() {
-    std::string arduino_serial = get_arduino_serial();
-    std::cout << "done init 1" << std::endl;
-    serial_descriptor = sys_call_guard(open(arduino_serial.c_str(), O_RDWR | O_NONBLOCK), "failed to open arduino serial file");
-    std::cout << "done init n" << std::endl;
-
-    boost::asio::io_service io;
-    boost::asio::serial_port port(io, "/dev/ttyACM0");           // Use the correct port name
-    port.set_option(boost::asio::serial_port::baud_rate(9600));  // Set the same baud rate as Arduino
+  Serial() : arduino_serial_port(io, get_arduino_serial()) {
+    arduino_serial_port.set_option(boost::asio::serial_port::baud_rate(115200));  // Set the same baud rate as Arduino
+    std::cout << "init" << std::endl;
   }
 };
 
@@ -184,7 +176,6 @@ int main() {
   AudioFile<double> audioFile;
 
   Serial serial;
-  serial.get_arduino_serial();
   while (true) {
     serial.read_line();
   }
