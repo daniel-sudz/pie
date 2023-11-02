@@ -10,7 +10,7 @@
 
 #include "../out/_deps/sdl2-src/include/SDL.h"
 #include "AudioFile.h"
-
+#include "boost/asio.hpp"
 /*
    Some helpers for abstracting away playing raw audio on two channels (X,Y)
    Uses the SLD2 video/audio library to be cross-platform
@@ -174,21 +174,9 @@ struct Serial {
     serial_descriptor = sys_call_guard(open(arduino_serial.c_str(), O_RDWR | O_NONBLOCK), "failed to open arduino serial file");
     std::cout << "done init n" << std::endl;
 
-    /* configure serial settings */
-    struct termios tty;
-    std::cout << "done init 2" << std::endl;
-    sys_call_guard(tcgetattr(serial_descriptor, &tty), "failed to call tcgetattr");
-    std::cout << "done init 3" << std::endl;
-    sys_call_guard(cfsetospeed(&tty, B115200), "failed to run cfsetospeed");  // Set the baud rate (e.g., 115200)
-    std::cout << "done init 4" << std::endl;
-    tty.c_cflag |= (CLOCAL | CREAD);  // Enable receiver and ignore modem control lines
-    tty.c_cflag &= ~PARENB;           // No parity
-    tty.c_cflag &= ~CSTOPB;           // 1 stop bit
-    tty.c_cflag &= ~CSIZE;
-    tty.c_cflag |= CS8;  // 8 data bits
-    sys_call_guard(tcsetattr(serial_descriptor, TCSANOW, &tty), "failed to run tcsetattr");
-    std::cout << "done init 5" << std::endl;
-    std::cout << "done init " << std::endl;
+    boost::asio::io_service io;
+    boost::asio::serial_port port(io, "/dev/ttyACM0");           // Use the correct port name
+    port.set_option(boost::asio::serial_port::baud_rate(9600));  // Set the same baud rate as Arduino
   }
 };
 

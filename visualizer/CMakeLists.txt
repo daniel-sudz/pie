@@ -4,6 +4,8 @@ include(FetchContent)
 project(HelloWorld CXX)
 set(CMAKE_CXX_STANDARD 20)
 
+include_directories("/opt/homebrew/Cellar/boost/1.83.0/include")
+
 
 # Compile the SDL2 library
 set (CMAKE_C_FLAGS "-Wno-deprecated-declarations")
