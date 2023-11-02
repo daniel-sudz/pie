@@ -45,7 +45,7 @@ void printNote(bool* inputArray, const char** noteArray){
 void setup() {
   
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(output0, OUTPUT);
   pinMode(output1, OUTPUT);
   pinMode(output2, OUTPUT);
