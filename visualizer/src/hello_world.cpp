@@ -4,6 +4,7 @@
 
 #include <boost/asio.hpp>
 #include <chrono>
+#include <deque>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -126,7 +127,7 @@ struct Serial {
   boost::asio::serial_port arduino_serial_port;
 
   /* current data we have read */
-  std::string read_buffer;
+  std::deque<char> read_buffer;
 
   /* returns the path to the arduino serial file */
   std::string get_arduino_serial() {
@@ -159,8 +160,18 @@ struct Serial {
   std::string read_line() {
     std::vector<char> tmp_buffer(1000);
     size_t bytes_read = arduino_serial_port.read_some(boost::asio::buffer(tmp_buffer));
+    std::string return_line;
     for (int i = 0; i < bytes_read; i++) {
-      std::cout << tmp_buffer[i] << " ";
+      read_buffer.push_back(tmp_buffer[i]);
+    }
+    if (std::find(read_buffer.begin(), read_buffer.end(), '\n') != read_buffer.end()) {
+      std::string ret_line;
+      while (read_buffer.front() != '\n') {
+        ret_line += read_buffer.front();
+        read_buffer.pop_front();
+      }
+      read_buffer.pop_front();
+      return ret_line;
     }
     return "";
   }
@@ -177,7 +188,10 @@ int main() {
 
   Serial serial;
   while (true) {
-    serial.read_line();
+    std::string line = serial.read_line();
+    if (line != "") {
+      std::cout << line << std::endl;
+    }
   }
 
   RawAudioPlayer audio_player;
