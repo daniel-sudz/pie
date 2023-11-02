@@ -2,6 +2,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <boost/asio.hpp>
 #include <chrono>
 #include <filesystem>
 #include <iostream>
@@ -44,13 +45,12 @@ struct RawAudioPlayer {
     }
 
     // Configure the audio output type that we want
-    want.freq = 192000;  // 192 kHz
-    want.format =
-        AUDIO_F32SYS;      // 32-bit floating point samples in native byte order
-    want.channels = 2;     // X, Y channels
-    want.samples = 1024;   // buffer size
-    want.callback = NULL;  // use SDL_QueueAudio instead of callbacks
-    want.userdata = NULL;  // use SDL_QueueAudio instead of callbacks
+    want.freq = 192000;          // 192 kHz
+    want.format = AUDIO_F32SYS;  // 32-bit floating point samples in native byte order
+    want.channels = 2;           // X, Y channels
+    want.samples = 1024;         // buffer size
+    want.callback = NULL;        // use SDL_QueueAudio instead of callbacks
+    want.userdata = NULL;        // use SDL_QueueAudio instead of callbacks
 
     // Open the audio device
     if ((output_device = SDL_OpenAudioDevice(NULL, 0, &want, &have, 0)) < 0) {
@@ -121,8 +121,15 @@ struct RawAudioPlayer {
 };
 
 struct Serial {
+  /* file descriptor for arduino serial */
+  int serial_descriptor = -1;
+
+  /* current data we have read */
+  std::string read_buffer;
+
   /* returns the path to the arduino serial file */
-  std::string get_arduino_serial() {
+  std::string
+  get_arduino_serial() {
     std::string arduino_serial;
     for (const auto& entry : std::filesystem::directory_iterator("/dev")) {
       std::string device_name = entry.path().generic_string();
@@ -137,6 +144,52 @@ struct Serial {
     std::cout << "located arduino serial port at " << arduino_serial << std::endl;
     return arduino_serial;
   }
+
+  /* guards against system call error */
+  int sys_call_guard(int code, std::string err) {
+    if (code == -1) {
+      std::cerr << err << std::endl;
+      std::cerr << "Error: " << std::strerror(errno) << std::endl;
+      exit(1);
+    }
+    return code;
+  }
+
+  /* read a line from the arduino serial */
+  std::string read_line() {
+    std::cout << "hi " << std::endl;
+    char tmp_buffer[10000];
+    int bytes_read = read(serial_descriptor, tmp_buffer, sizeof(tmp_buffer));
+    std::cout << "read " << bytes_read << std::endl;
+    for (char c : std::string(tmp_buffer, bytes_read)) {
+      std::cout << "read_char " << c << std::endl;
+    }
+    return "";
+  }
+
+  /* initialize the serial communication */
+  Serial() {
+    std::string arduino_serial = get_arduino_serial();
+    std::cout << "done init 1" << std::endl;
+    serial_descriptor = sys_call_guard(open(arduino_serial.c_str(), O_RDWR | O_NONBLOCK), "failed to open arduino serial file");
+    std::cout << "done init n" << std::endl;
+
+    /* configure serial settings */
+    struct termios tty;
+    std::cout << "done init 2" << std::endl;
+    sys_call_guard(tcgetattr(serial_descriptor, &tty), "failed to call tcgetattr");
+    std::cout << "done init 3" << std::endl;
+    sys_call_guard(cfsetospeed(&tty, B115200), "failed to run cfsetospeed");  // Set the baud rate (e.g., 115200)
+    std::cout << "done init 4" << std::endl;
+    tty.c_cflag |= (CLOCAL | CREAD);  // Enable receiver and ignore modem control lines
+    tty.c_cflag &= ~PARENB;           // No parity
+    tty.c_cflag &= ~CSTOPB;           // 1 stop bit
+    tty.c_cflag &= ~CSIZE;
+    tty.c_cflag |= CS8;  // 8 data bits
+    sys_call_guard(tcsetattr(serial_descriptor, TCSANOW, &tty), "failed to run tcsetattr");
+    std::cout << "done init 5" << std::endl;
+    std::cout << "done init " << std::endl;
+  }
 };
 
 int main() {
@@ -144,6 +197,9 @@ int main() {
 
   Serial serial;
   serial.get_arduino_serial();
+  while (true) {
+    serial.read_line();
+  }
 
   RawAudioPlayer audio_player;
   /*
