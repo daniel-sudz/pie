@@ -73,11 +73,12 @@ struct RawAudioPlayer {
     // interleave the raw data for the two channels
     std::vector<float> channel_interleave;
     for (int i = 0; i < X.size(); i++) {
-      channel_interleave.push_back(X[i]);
-      channel_interleave.push_back(Y[i]);
+      channel_interleave.push_back(X[i] * 1e10);
+      channel_interleave.push_back(Y[i] * 1e10);
     }
     SDL_QueueAudio(output_device, channel_interleave.data(),
                    channel_interleave.size() * sizeof(channel_interleave[0]));
+
     RawAudioPlayer::process_sdl2_system_events();
   }
 
@@ -218,9 +219,9 @@ struct Serial {
         Y = 50;
       }
       std::cout << "last note" << last_note_read << std::endl;
-      audio_player.queue_audio(std::vector<float>(1000, X),
-                               std::vector<float>(1000, Y));
-      note_player = boost::asio::deadline_timer(io, boost::posix_time::milliseconds(100));
+      audio_player.queue_audio(std::vector<float>(100, X),
+                               std::vector<float>(100, Y));
+      note_player = boost::asio::deadline_timer(io, boost::posix_time::milliseconds(1));
       queue_note_player_timer();
     });
   }
