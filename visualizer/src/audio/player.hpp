@@ -20,12 +20,30 @@ namespace audio {
         PaStream* stream;
 
         static int __streamCallback(const void* input, void* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
-            T::streamCallback(input, output, frameCount, timeInfo, statusFlags, userData);
+            return T::streamCallback((float*)input, (float*)output, frameCount, timeInfo, statusFlags, userData);
         }
 
        public:
         Player() {
             audio::open_stream(stream, __streamCallback, this);
+        }
+    };
+
+    /* Sample player that just plays the same note */
+    struct DemoPlayer : public Player<DemoPlayer> {
+        int note_to_play = 1;
+        static int streamCallback(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
+            /* Get a handle to ourselves */
+            DemoPlayer* self = (DemoPlayer*)userData;
+
+            /* Fill the buffer */
+            for (int i = 0; i < frameCount; i++) {
+                output[i * 2] = self->note_to_play;        // Set left sound
+                output[(i * 2) + 1] = self->note_to_play;  // Set right sound
+            }
+
+            /* All good */
+            return 0;
         }
     };
 
