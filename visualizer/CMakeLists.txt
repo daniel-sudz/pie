@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.8)
 include(FetchContent)
 
-project(HelloWorld CXX)
+project(HelloWorld LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 include_directories("/opt/homebrew/Cellar/boost/1.83.0/include")
@@ -24,5 +24,5 @@ add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
 
-
+add_subdirectory(thirdparty/portaudio)
 add_subdirectory(src)

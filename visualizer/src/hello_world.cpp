@@ -11,6 +11,7 @@
 #include <string>
 
 #include "../out/_deps/sdl2-src/include/SDL.h"
+#include "./audio/callback.hpp"
 #include "./raw_audio_player.hpp"
 #include "AudioFile.h"
 #include "boost/algorithm/string.hpp"
@@ -48,16 +49,6 @@ struct Serial {
     }
     std::cout << "located arduino serial port at " << arduino_serial << std::endl;
     return arduino_serial;
-  }
-
-  /* guards against system call error */
-  int sys_call_guard(int code, std::string err) {
-    if (code == -1) {
-      std::cerr << err << std::endl;
-      std::cerr << "Error: " << std::strerror(errno) << std::endl;
-      exit(1);
-    }
-    return code;
   }
 
   /* queue continuous async read */
