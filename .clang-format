@@ -1,0 +1,10 @@
+---
+BasedOnStyle: Google
+DerivePointerAlignment: false
+PointerAlignment: Left
+AllowShortLoopsOnASingleLine: true
+AllowShortBlocksOnASingleLine: true
+ColumnLimit: 0
+IndentWidth: 4
+ContinuationIndentWidth: 4
+NamespaceIndentation: All
