@@ -14,13 +14,12 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     struct EtchaSketchPotValNode {
         float left_val = 0;
         float right_val = 0;
-        std::atomic<EtchaSketchPotValNode*> next = nullptr;
+        EtchaSketchPotValNode* next = nullptr;
     };
 
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
-
-    std::atomic<int> pot_num_nodes = 0;
+    std::atomic<int> pot_num_values = 0;
 
     void process_message(std::string msg) {
         // POTL<left pot value>POTR<right pot value>
@@ -33,7 +32,22 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
         std::cout << msg << std::endl;
     }
 
+    /* Processes a new update from the potentiometers */
     void process_pot_info(float left_pot, float right_pot) {
+        if (pot_num_values == 0) {
+            /* Set the first value */
+            pot_vals_head->left_val = left_pot;
+            pot_vals_head->left_val = right_pot;
+            pot_num_values = 1;
+        } else {
+            /* Set the next value */
+            pot_vals_tail->next = new EtchaSketchPotValNode;
+            pot_vals_tail->next->left_val = left_pot;
+            pot_vals_tail->next->right_val = right_pot;
+            /* Move the tail */
+            pot_vals_tail = pot_vals_tail->next;
+            pot_num_values++;
+        }
     }
 };
 
