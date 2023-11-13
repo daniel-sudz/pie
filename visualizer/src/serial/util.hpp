@@ -31,4 +31,12 @@ namespace serial {
     void debug_err(std::string str) {
         std::cerr << "[INFO SERIAL]: " << str << std::endl;
     }
+
+    /* Trims message, useful for serial message preprocessing */
+    std::string trim_message(std::string str) {
+        /* https://stackoverflow.com/questions/216823/how-to-trim-a-stdstring */
+        str.erase(0, str.find_first_not_of("\t\n\v\f\r "));  // left trim
+        str.erase(str.find_last_not_of("\t\n\v\f\r ") + 1);  // right trim
+        return str;
+    }
 }  // namespace serial

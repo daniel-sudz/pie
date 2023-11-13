@@ -57,14 +57,18 @@ namespace serial {
         /* Non-blocking call to process serial IO
          * This should be called as frequently as possible to keep the serial IO going.
          */
-        void non_block_process_io_loop() {
+        void non_block_process_io_loop(bool trim_msg = false) {
             /* Read a single char is availiable */
             if (serial_port.IsDataAvailable()) {
                 serial_port.Read(read_raw_buffer, 1, 0);
 
                 /* If we have a complete message, fire the message reciever callback */
                 if (read_raw_buffer[0] == '\n') {
-                    process_message(read_line_buffer);
+                    if (trim_msg) {
+                        process_message(serial::trim_message(read_line_buffer));
+                    } else {
+                        process_message(read_line_buffer);
+                    }
                     read_line_buffer.clear();
                 } else {
                     read_line_buffer += read_raw_buffer[0];
