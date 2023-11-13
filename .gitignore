@@ -35,3 +35,6 @@ Temporary Items
 .clang_complete
 .gcc-flags.json
 .pio
+
+# additional platformIO ignores
+c_cpp_properties.json
