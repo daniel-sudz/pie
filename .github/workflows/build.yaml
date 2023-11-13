@@ -16,7 +16,10 @@ jobs:
           python-version: '3.9'
 
       - name: Install C++ Compiler Tool Chain
-        run: sudo apt-get install -y gcc make cmake clang-format clang-tidy doxygen
+        run: sudo apt-get install -y gcc make cmake clang-format clang-tidy
+
+      - name: Install Portaudio Dependency chain
+        run: sudo apt-get install -y doxygen pulseaudio
           
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
