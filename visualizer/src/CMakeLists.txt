@@ -1,5 +1,5 @@
 add_executable(DemoPlayer bin/demo_player.cpp)
-target_link_libraries(DemoPlayer portaudio_static)
+target_link_libraries(DemoPlayer PortAudio)
 
 add_executable(DemoSerialReciever bin/demo_serial_reciever.cpp)
-target_link_libraries(DemoSerialReciever portaudio_static libserial_static)
+target_link_libraries(DemoSerialReciever PortAudio libserial_static)
