@@ -1,0 +1,6 @@
+[submodule "visualizer/thirdparty/libserial"]
+	path = visualizer/thirdparty/libserial
+	url = https://github.com/crayzeewulf/libserial
+[submodule "visualizer/thirdparty/portaudio"]
+	path = visualizer/thirdparty/portaudio
+	url = https://github.com/PortAudio/portaudio
