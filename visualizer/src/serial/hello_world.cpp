@@ -34,23 +34,6 @@ struct Serial {
     /* current state */
     std::string last_note_read;
 
-    /* returns the path to the arduino serial file */
-    std::string get_arduino_serial() {
-        std::string arduino_serial;
-        for (const auto& entry : std::filesystem::directory_iterator("/dev")) {
-            std::string device_name = entry.path().generic_string();
-            if (device_name.find("tty.usbmodem") != std::string::npos) {
-                arduino_serial = device_name;
-            }
-        };
-        if (arduino_serial.empty()) {
-            std::cerr << "failed to find arduino serial port" << std::endl;
-            exit(1);
-        }
-        std::cout << "located arduino serial port at " << arduino_serial << std::endl;
-        return arduino_serial;
-    }
-
     /* queue continuous async read */
     void queue_async_read() {
         arduino_serial_port.async_read_some(boost::asio::mutable_buffer(tmp_buffer, sizeof(tmp_buffer)), [this](const boost::system::error_code& error, size_t bytes_read) {
