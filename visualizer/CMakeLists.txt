@@ -25,4 +25,5 @@ add_link_options(-fsanitize=address)
 set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-unused-function")
 
 add_subdirectory(thirdparty/portaudio)
+add_subdirectory(thirdparty/libserial)
 add_subdirectory(src)
