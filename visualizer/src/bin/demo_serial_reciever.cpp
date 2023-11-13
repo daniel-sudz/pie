@@ -12,7 +12,6 @@ struct DemoSerialReciever : public serial::SerialReciever {
     }
 };
 
-#include "../serial/serial_reciever.hpp"
 int main() {
     DemoSerialReciever reciever;
     while (true) {
