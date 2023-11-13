@@ -19,7 +19,7 @@ jobs:
         run: sudo apt-get install -y gcc make cmake clang-format clang-tidy
 
       - name: Install Portaudio Dependency chain
-        run: sudo apt-get install -y doxygen pulseaudio
+        run: sudo apt-get install -y doxygen pulseaudio libboost-all-dev
           
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
