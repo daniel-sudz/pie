@@ -38,3 +38,4 @@ Temporary Items
 
 # additional platformIO ignores
 c_cpp_properties.json
+launch.json
