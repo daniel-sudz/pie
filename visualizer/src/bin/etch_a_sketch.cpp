@@ -6,6 +6,8 @@
 #include <sstream>
 #include <string>
 
+#include "../../thirdparty/portaudio/include/portaudio.h"
+#include "../audio/player.hpp"
 #include "../serial/serial_reciever.hpp"
 
 /* Etch-a-sketch serial processer */
@@ -51,11 +53,58 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     }
 };
 
-int main() {
+/* Etch-a-sketch osciliscope driver */
+struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
+   public:
+    /* Our serial processing is abstracted away here */
     EtchaSketchSerialReciever serial_reciever;
+
+    /* We loop all the pot vals and just play them in sequence */
+    int current_pot_idx_node = 0;
+    EtchaSketchSerialReciever::EtchaSketchPotValNode* current_pot_node = serial_reciever.pot_vals_head;
+
+    static int streamCallback(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
+        /* Get a handle to ourselves */
+        EtchaSketchPlayer* self = (EtchaSketchPlayer*)userData;
+
+        /* Fill the buffer */
+        for (int i = 0; i < frameCount; i++) {
+            /* Reset to beginning on pot vals if we reach the end */
+            if (self->current_pot_idx_node >= self->serial_reciever.pot_num_values) {
+                self->current_pot_idx_node = 0;
+                self->current_pot_node = self->serial_reciever.pot_vals_head;
+            }
+
+            /* Retrieve the pot val that we are currently on */
+            float left_pot_val = self->current_pot_node->left_val;
+            float right_pot_val = self->current_pot_node->right_val;
+
+            /* Convert the pot val into a our sound range [-1, 1]
+             * Let's assume the pot range output is linear in [0, 1023]
+             */
+            float pot_range_max = 1023.f;
+            float left_pot_sound = (left_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
+            float right_pot_sound = (right_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
+
+            /* Actually fill the sound buffer */
+            output[i * 2] = left_pot_sound;
+            output[i * 2 + 1] = right_pot_sound;
+
+            /* Increment the pot val that we read */
+            self->current_pot_idx_node++;
+            self->current_pot_node = self->current_pot_node->next;
+        }
+
+        /* All is good */
+        return 0;
+    }
+};
+
+int main() {
+    EtchaSketchPlayer driver;
 
     /* Main IO loop */
     while (true) {
-        serial_reciever.non_block_process_io_loop();
+        driver.serial_reciever.non_block_process_io_loop();
     }
 }

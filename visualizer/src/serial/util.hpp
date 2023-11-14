@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <string>
@@ -32,8 +33,33 @@ namespace serial {
         std::cerr << "[INFO SERIAL]: " << str << std::endl;
     }
 
+    /*  Helper container for periodically logging debug messages.
+     *
+     *  The contructor takes the logging interval in milliseconds
+     *  and calls to log_if_needed(msg) will be dropped if the interval has not elapsed.
+     *
+     */
+    struct DebugLogTimer {
+        float log_interval_milliseconds;
+
+        std::chrono::system_clock::time_point last = std::chrono::system_clock::now();
+
+        void log_if_needed(std::string msg) {
+            std::chrono::system_clock::time_point cur = std::chrono::system_clock::now();
+            float milliseconds_diff = std::chrono::duration_cast<std::chrono::milliseconds>(cur - last).count();
+            if (milliseconds_diff > log_interval_milliseconds) {
+                serial::debug_info(msg);
+                last = std::chrono::system_clock::now();
+            }
+        }
+
+        DebugLogTimer(float _log_interval_milliseconds) : log_interval_milliseconds(_log_interval_milliseconds) {
+        }
+    };
+
     /* Trims message, useful for serial message preprocessing */
-    std::string trim_message(std::string str) {
+    std::string
+    trim_message(std::string str) {
         /* https://stackoverflow.com/questions/216823/how-to-trim-a-stdstring */
         str.erase(0, str.find_first_not_of("\t\n\v\f\r "));  // left trim
         str.erase(str.find_last_not_of("\t\n\v\f\r ") + 1);  // right trim
