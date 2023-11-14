@@ -44,11 +44,14 @@ namespace serial {
 
         std::chrono::system_clock::time_point last = std::chrono::system_clock::now();
 
-        void log_if_needed(std::string msg) {
+        /* Take a callback that resolves the msg to log.
+         * In some cases the message evaluation may be expensive so this helps preserve performance.
+         */
+        void log_if_needed(std::function<std::string()> get_msg) {
             std::chrono::system_clock::time_point cur = std::chrono::system_clock::now();
             float milliseconds_diff = std::chrono::duration_cast<std::chrono::milliseconds>(cur - last).count();
             if (milliseconds_diff > log_interval_milliseconds) {
-                serial::debug_info(msg);
+                serial::debug_info(get_msg());
                 last = std::chrono::system_clock::now();
             }
         }

@@ -12,6 +12,9 @@
 
 /* Etch-a-sketch serial processer */
 struct EtchaSketchSerialReciever : public serial::SerialReciever {
+    /* Periodically log the amount of potentiometer values we have */
+    serial::DebugLogTimer pot_count_debug_logger = serial::DebugLogTimer(1000);
+
     /* Linked list node to store potentiometer values */
     struct EtchaSketchPotValNode {
         float left_val = 0;
@@ -31,7 +34,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
             sscanf(msg.c_str(), "POTL%dPOTR%d", &left_pot, &right_port);
             process_pot_info((float)left_pot, (float)right_port);
         }
-        std::cout << msg << std::endl;
+        pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value"; });
     }
 
     /* Processes a new update from the potentiometers */
