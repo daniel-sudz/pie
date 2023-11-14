@@ -25,6 +25,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
     std::atomic<int> pot_num_values = 0;
+    static_assert(std::atomic<int>::is_always_lock_free, "int should be lock-free to avoid undefined behaviour");
 
     void process_message(std::string msg) {
         // POTL<left pot value>POTR<right pot value>
