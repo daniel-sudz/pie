@@ -30,14 +30,18 @@ struct DemoPlayer : public audio::Player<DemoPlayer> {
             self->right_phase -= 2.0f;
         }
 
-        std::cerr << "call: " << frameCount << std::endl;
+        // std::cerr << "call: " << frameCount << std::endl;
 
         /* All good */
         return 0;
+    }
+    void* get_concrete_handle() {
+        return this;
     }
 };
 
 int main() {
     DemoPlayer player;
+    player.init_player();
     Pa_Sleep(1000 * 100);
 }

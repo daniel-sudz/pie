@@ -14,6 +14,8 @@
 struct EtchaSketchSerialReciever : public serial::SerialReciever {
     /* Periodically log the amount of potentiometer values we have */
     serial::DebugLogTimer pot_count_debug_logger = serial::DebugLogTimer(1000);
+    serial::DebugLogTimer pot_value_debug_logger = serial::DebugLogTimer(1000);
+    serial::DebugLogTimer tmp_logger_1 = serial::DebugLogTimer(1000);
 
     /* Linked list node to store potentiometer values */
     struct EtchaSketchPotValNode {
@@ -31,9 +33,14 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
         // POTL<left pot value>POTR<right pot value>
         if (msg.find("POTL") != std::string::npos && msg.find("POTR") != std::string::npos) {
             int left_pot;
-            int right_port;
-            sscanf(msg.c_str(), "POTL%dPOTR%d", &left_pot, &right_port);
-            process_pot_info((float)left_pot, (float)right_port);
+            int right_pot;
+            sscanf(msg.c_str(), "POTL%dPOTR%d", &left_pot, &right_pot);
+            pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot) + " TailL: " + std::to_string(pot_vals_tail->left_val) + " TailR: " + std::to_string(pot_vals_tail->right_val)); });
+            /* Make sure some change some happened instead of continuously appending the same value */
+            if ((std::abs(left_pot - pot_vals_tail->left_val) >= 5) || (std::abs(right_pot - pot_vals_tail->right_val) >= 5)) {
+                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::abs(left_pot - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::abs(right_pot - pot_vals_tail->right_val)); });
+                process_pot_info((float)left_pot, (float)right_pot);
+            }
         }
         pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value"; });
     }
@@ -43,7 +50,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
         if (pot_num_values == 0) {
             /* Set the first value */
             pot_vals_head->left_val = left_pot;
-            pot_vals_head->left_val = right_pot;
+            pot_vals_head->right_val = right_pot;
             pot_num_values = 1;
         } else {
             /* Set the next value */
@@ -66,16 +73,16 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
     /* We loop all the pot vals and just play them in sequence */
     int current_pot_idx_node = 0;
     EtchaSketchSerialReciever::EtchaSketchPotValNode* current_pot_node = serial_reciever.pot_vals_head;
-
+    static int streamCallback2(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
+        return 0;
+    };
     static int streamCallback(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
         /* Get a handle to ourselves */
         EtchaSketchPlayer* self = (EtchaSketchPlayer*)userData;
 
         /* Fill the buffer */
         for (int i = 0; i < frameCount; i++) {
-            /* Reset to beginning on pot vals if we reach the end */
-            if (self->current_pot_idx_node >= self->serial_reciever.pot_num_values) {
-                self->current_pot_idx_node = 0;
+            if (self->current_pot_node == nullptr) {
                 self->current_pot_node = self->serial_reciever.pot_vals_head;
             }
 
@@ -95,17 +102,20 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
             output[i * 2 + 1] = right_pot_sound;
 
             /* Increment the pot val that we read */
-            self->current_pot_idx_node++;
             self->current_pot_node = self->current_pot_node->next;
         }
-
         /* All is good */
         return 0;
+    }
+
+    void* get_concrete_handle() {
+        return this;
     }
 };
 
 int main() {
     EtchaSketchPlayer driver;
+    driver.init_player();
 
     /* Main IO loop */
     while (true) {
