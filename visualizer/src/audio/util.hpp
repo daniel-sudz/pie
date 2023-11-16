@@ -56,7 +56,7 @@ namespace audio {
                 /* This is your callback function */
                 streamCallback,
                 /* This is a pointer that will be passed to your callback*/
-                &data),
+                data),
             "audio::open_stream()");
     }
 

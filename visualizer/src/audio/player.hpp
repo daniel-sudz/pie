@@ -18,6 +18,7 @@ namespace audio {
        private:
         /* The stream for this player. Do not modify yourself. */
         PaStream* stream;
+        void* Userdata;
 
         inline static bool PORTAUDIO_INITIALIZED = false;
 
@@ -25,16 +26,22 @@ namespace audio {
             return T::streamCallback((float*)input, (float*)output, frameCount, timeInfo, statusFlags, userData);
         }
 
+        virtual void* get_concrete_handle() = 0;
+
        public:
-        Player() {
+        void init_player() {
             if (!PORTAUDIO_INITIALIZED) {
                 audio::portaudio_initialize();
                 PORTAUDIO_INITIALIZED = true;
             }
-            printf("Value:  %p\n", stream);
-            audio::portaudio_open_stream(&stream, __streamCallback, this);
-            printf("Value:  %p\n", stream);
+            Userdata = get_concrete_handle();
+            printf("This handle :  %p\n", Userdata);
+            audio::portaudio_open_stream(&stream, __streamCallback, Userdata);
             audio::portaudio_start_stream(stream);
+        }
+        Player() {
+            printf("Value:  %p\n", stream);
+            printf("Value:  %p\n", stream);
         }
     };
 
