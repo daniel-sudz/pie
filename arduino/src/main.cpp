@@ -25,9 +25,9 @@ void loop() {
     endPressed = digitalRead(endPin);
     pot0_val = 1023 - analogRead(pot0);
     pot1_val = 1023 - analogRead(pot1);
-    Serial.println("POT0");
-    Serial.println(pot0_val);
-    Serial.println("POT1");
+    Serial.print("POTL");
+    Serial.print(pot0_val);
+    Serial.print("POTR");
     Serial.println(pot1_val);
     if (startPressed == 1) {
         Serial.println("START");
