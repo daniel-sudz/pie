@@ -1,5 +1,6 @@
 #include <unistd.h>
 
+#include <algorithm>
 #include <atomic>
 #include <filesystem>
 #include <iostream>
@@ -29,7 +30,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
 
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
-    std::atomic<int> pot_num_values = 1;
+    std::atomic<int> pot_num_values = 0;
     static_assert(std::atomic<int>::is_always_lock_free, "int should be lock-free to avoid undefined behaviour");
 
     void process_message(std::string msg) {
@@ -51,9 +52,10 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     /* Processes a new update from the potentiometers */
     void process_pot_info(float left_pot, float right_pot) {
         /* Set the first value */
-        if (pot_num_values == 1) {
+        if (pot_num_values == 0) {
             pot_vals_head->left_val = left_pot;
             pot_vals_head->right_val = right_pot;
+            pot_num_values = 1;
         }
         /* Set the next value */
         else {
@@ -86,6 +88,14 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
     static int streamCallback(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
         /* Get a handle to ourselves */
         EtchaSketchPlayer* self = (EtchaSketchPlayer*)userData;
+
+        /* Guard on the case when we have zero pot value readings as there is nothing to play */
+        if (self->serial_reciever.pot_num_values == 0) {
+            std::fill_n(output, frameCount, 0);
+            return 0;
+        }
+
+        /* -------------  self->serial_reciever.pot_num_values >= 1 after the guard ------------- */
 
         /* Fill the buffer */
         for (int i = 0; i < frameCount; i++) {
