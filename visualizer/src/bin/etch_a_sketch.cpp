@@ -1,5 +1,6 @@
 #include <unistd.h>
 
+#include <algorithm>
 #include <atomic>
 #include <filesystem>
 #include <iostream>
@@ -24,6 +25,9 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
         EtchaSketchPotValNode* next = nullptr;
     };
 
+    /* Frequency at which to trace the etch a sketch */
+    float trace_freq = 1e4;
+
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
     std::atomic<int> pot_num_values = 0;
@@ -47,13 +51,14 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
 
     /* Processes a new update from the potentiometers */
     void process_pot_info(float left_pot, float right_pot) {
+        /* Set the first value */
         if (pot_num_values == 0) {
-            /* Set the first value */
             pot_vals_head->left_val = left_pot;
             pot_vals_head->right_val = right_pot;
             pot_num_values = 1;
-        } else {
-            /* Set the next value */
+        }
+        /* Set the next value */
+        else {
             pot_vals_tail->next = new EtchaSketchPotValNode;
             pot_vals_tail->next->left_val = left_pot;
             pot_vals_tail->next->right_val = right_pot;
@@ -73,17 +78,40 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
     /* We loop all the pot vals and just play them in sequence */
     int current_pot_idx_node = 0;
     EtchaSketchSerialReciever::EtchaSketchPotValNode* current_pot_node = serial_reciever.pot_vals_head;
-    static int streamCallback2(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
-        return 0;
-    };
+
+    /* Based on current_pot_idx_node, how much time have we currently traced */
+    float current_trace_time = 0;
+
+    /* Based on all the samples we have buffered to the DAC, what time are we currently at */
+    float current_buffered_trace_time = 0;
+
     static int streamCallback(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
         /* Get a handle to ourselves */
         EtchaSketchPlayer* self = (EtchaSketchPlayer*)userData;
 
+        /* Guard on the case when we have zero pot value readings as there is nothing to play */
+        if (self->serial_reciever.pot_num_values == 0) {
+            std::fill_n(output, frameCount, 0);
+            return 0;
+        }
+
+        /* -------------  self->serial_reciever.pot_num_values >= 1 after the guard ------------- */
+
         /* Fill the buffer */
         for (int i = 0; i < frameCount; i++) {
-            if (self->current_pot_node == nullptr) {
-                self->current_pot_node = self->serial_reciever.pot_vals_head;
+            /* Scan the trace buffer until we are at the correct play time */
+            while (self->current_trace_time < self->current_buffered_trace_time) {
+                /* Move the trace buffer by one */
+                self->current_pot_idx_node++;
+                self->current_pot_node = self->current_pot_node->next;
+
+                /* Loop if we reach the end of the trace buffer */
+                if (self->current_pot_node == nullptr) {
+                    self->current_pot_idx_node = 0;
+                    self->current_pot_node = self->serial_reciever.pot_vals_head;
+                }
+                /* Increment the trace time */
+                self->current_trace_time += (1.0 / self->serial_reciever.pot_num_values) * (1.0 / self->serial_reciever.trace_freq);
             }
 
             /* Retrieve the pot val that we are currently on */
@@ -101,14 +129,15 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
             output[i * 2] = left_pot_sound;
             output[i * 2 + 1] = right_pot_sound;
 
-            /* Increment the pot val that we read */
-            self->current_pot_node = self->current_pot_node->next;
+            /* Increment the amount of buffer time that we have traced */
+            self->current_buffered_trace_time += (1.0 / audio::sample_rate);
         }
         /* All is good */
         return 0;
     }
 
-    void* get_concrete_handle() {
+    void*
+    get_concrete_handle() {
         return this;
     }
 };
