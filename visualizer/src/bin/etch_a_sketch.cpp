@@ -99,7 +99,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
 
         /* Fill the buffer */
         for (int i = 0; i < frameCount; i++) {
-            /* Scan the trace buffer until we are at the corrent play time */
+            /* Scan the trace buffer until we are at the correct play time */
             while (self->current_trace_time < self->current_buffered_trace_time) {
                 /* Move the trace buffer by one */
                 self->current_pot_idx_node++;
