@@ -27,12 +27,12 @@ const int endPin = 13;
 bool startPressed = 0;
 bool endPressed = 0;
 
-const char* notes0[4] = {"C4", "D#4", "F#4", "A4"};
-const char* notes1[4] = {"C#4", "E4", "G4", "A#4"};
-const char* notes2[4] = {"D4", "F4", "G#4", "B4"};
-const char* notes3[4] = {"C5", "D#5", "F#5", "A5"};
-const char* notes4[4] = {"C#5", "E5", "G5", "A#5"};
-const char* notes5[4] = {"D5", "F5", "G#5", "B5"};
+const char* notes0[4] = {"130.81", "155.56", "185.00", "220.00"};
+const char* notes1[4] = {"138.59", "164.81", "196.00", "233.08"};
+const char* notes2[4] = {"146.83", "174.61", "207.65", "246.94"};
+const char* notes3[4] = {"261.63", "311.13", "369.99", "440.00"};
+const char* notes4[4] = {"277.18", "329.63", "392.00", "466.16"};
+const char* notes5[4] = {"293.66", "349.23", "415.30", "493.88"};
 
 // put function definitions here:
 bool readPin(int inputPin) {
@@ -47,7 +47,7 @@ bool readPin(int inputPin) {
 void printNote(bool* inputArray, const char** noteArray){
   for(int i = 0; i < 4; i++){
     if(inputArray[i] == 1){
-      Serial.println(noteArray[i]);
+      Serial.print(noteArray[i]);
     }
   }
 }
