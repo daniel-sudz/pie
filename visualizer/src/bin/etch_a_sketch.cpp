@@ -42,10 +42,10 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
             int left_pot;
             int right_pot;
             sscanf(msg.c_str(), "POTL%dPOTR%d", &left_pot, &right_pot);
-            pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot) + " TailL: " + std::to_string((float)pot_vals_tail->left_val) + " TailR: " + std::to_string((float)pot_vals_tail->right_val)); });
+            pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot) + " TailL: " + std::to_string(pot_vals_tail->left_val) + " TailR: " + std::to_string(pot_vals_tail->right_val)); });
             /* Make sure some change some happened instead of continuously appending the same value */
-            if ((std::abs(left_pot - (float)pot_vals_tail->left_val) >= 5) || (std::abs(right_pot - (float)pot_vals_tail->right_val) >= 5)) {
-                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::abs(left_pot - (float)pot_vals_tail->left_val)) + " r diff " + std::to_string(std::abs(right_pot - (float)pot_vals_tail->right_val)); });
+            if ((std::abs(left_pot - (float)pot_vals_tail->left_val) >= 5) || (std::abs(right_pot - pot_vals_tail->right_val) >= 5)) {
+                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::abs(left_pot - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::abs(right_pot - pot_vals_tail->right_val)); });
                 process_pot_info((accurate_float)left_pot, (accurate_float)right_pot);
             }
         }
@@ -117,7 +117,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                 accurate_float trace_contribution = (accurate_float(1) / (accurate_float(self->serial_reciever.pot_num_values) * accurate_float(self->serial_reciever.trace_freq)));
                 self->current_trace_time += trace_contribution;
 
-                self->serial_reciever.timestamp_contribution_logger.log_if_needed([self, i, frameCount, trace_contribution]() { return std::to_string(i) + " " + std::to_string(frameCount) + " trace contribution " + std::to_string((float)trace_contribution) + " timestamps current_trace_time " + std::to_string((float)self->current_trace_time) + " timestamp buffer_trace_time " + std::to_string((float)self->current_buffered_trace_time); });
+                self->serial_reciever.timestamp_contribution_logger.log_if_needed([self, i, frameCount, trace_contribution]() { return std::to_string(i) + " " + std::to_string(frameCount) + " trace contribution " + std::to_string(trace_contribution) + " timestamps current_trace_time " + std::to_string(self->current_trace_time) + " timestamp buffer_trace_time " + std::to_string(self->current_buffered_trace_time); });
             }
 
             /* Retrieve the pot val that we are currently on */
