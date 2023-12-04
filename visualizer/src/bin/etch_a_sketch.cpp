@@ -11,7 +11,7 @@
 #include "../audio/player.hpp"
 #include "../serial/serial_reciever.hpp"
 
-typedef __float128 accurate_float;
+typedef long double accurate_float;
 
 /* Etch-a-sketch serial processer */
 struct EtchaSketchSerialReciever : public serial::SerialReciever {
@@ -114,7 +114,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                     self->current_pot_node = self->serial_reciever.pot_vals_head;
                 }
                 /* Increment the trace time */
-                long double trace_contribution = (1.0 / self->serial_reciever.pot_num_values) * (1.0 / self->serial_reciever.trace_freq);
+                accurate_float trace_contribution = (accurate_float(1) / (accurate_float(self->serial_reciever.pot_num_values) * accurate_float(self->serial_reciever.trace_freq)));
                 self->current_trace_time += trace_contribution;
 
                 self->serial_reciever.timestamp_contribution_logger.log_if_needed([self, i, frameCount, trace_contribution]() { return std::to_string(i) + " " + std::to_string(frameCount) + " trace contribution " + std::to_string((float)trace_contribution) + " timestamps current_trace_time " + std::to_string((float)self->current_trace_time) + " timestamp buffer_trace_time " + std::to_string((float)self->current_buffered_trace_time); });
@@ -136,7 +136,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
             output[i * 2 + 1] = right_pot_sound;
 
             /* Increment the amount of buffer time that we have traced */
-            self->current_buffered_trace_time += (1.0 / audio::sample_rate);
+            self->current_buffered_trace_time += (accurate_float(1) / accurate_float(audio::sample_rate));
         }
         /* All is good */
         return 0;
