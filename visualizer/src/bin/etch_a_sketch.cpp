@@ -11,22 +11,25 @@
 #include "../audio/player.hpp"
 #include "../serial/serial_reciever.hpp"
 
+typedef __float128 accurate_float;
+
 /* Etch-a-sketch serial processer */
 struct EtchaSketchSerialReciever : public serial::SerialReciever {
     /* Periodically log the amount of potentiometer values we have */
     serial::DebugLogTimer pot_count_debug_logger = serial::DebugLogTimer(1000);
     serial::DebugLogTimer pot_value_debug_logger = serial::DebugLogTimer(1000);
+    serial::DebugLogTimer timestamp_contribution_logger = serial::DebugLogTimer(1000);
     serial::DebugLogTimer tmp_logger_1 = serial::DebugLogTimer(1000);
 
     /* Linked list node to store potentiometer values */
     struct EtchaSketchPotValNode {
-        float left_val = 0;
-        float right_val = 0;
+        accurate_float left_val = 0;
+        accurate_float right_val = 0;
         EtchaSketchPotValNode* next = nullptr;
     };
 
     /* Frequency at which to trace the etch a sketch */
-    float trace_freq = 1e4;
+    accurate_float trace_freq = 1e4;
 
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
@@ -39,18 +42,18 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
             int left_pot;
             int right_pot;
             sscanf(msg.c_str(), "POTL%dPOTR%d", &left_pot, &right_pot);
-            pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot) + " TailL: " + std::to_string(pot_vals_tail->left_val) + " TailR: " + std::to_string(pot_vals_tail->right_val)); });
+            pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot) + " TailL: " + std::to_string((float)pot_vals_tail->left_val) + " TailR: " + std::to_string((float)pot_vals_tail->right_val)); });
             /* Make sure some change some happened instead of continuously appending the same value */
-            if ((std::abs(left_pot - pot_vals_tail->left_val) >= 5) || (std::abs(right_pot - pot_vals_tail->right_val) >= 5)) {
-                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::abs(left_pot - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::abs(right_pot - pot_vals_tail->right_val)); });
-                process_pot_info((float)left_pot, (float)right_pot);
+            if ((std::abs(left_pot - (float)pot_vals_tail->left_val) >= 5) || (std::abs(right_pot - (float)pot_vals_tail->right_val) >= 5)) {
+                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::abs(left_pot - (float)pot_vals_tail->left_val)) + " r diff " + std::to_string(std::abs(right_pot - (float)pot_vals_tail->right_val)); });
+                process_pot_info((accurate_float)left_pot, (accurate_float)right_pot);
             }
         }
         pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value"; });
     }
 
     /* Processes a new update from the potentiometers */
-    void process_pot_info(float left_pot, float right_pot) {
+    void process_pot_info(accurate_float left_pot, accurate_float right_pot) {
         /* Set the first value */
         if (pot_num_values == 0) {
             pot_vals_head->left_val = left_pot;
@@ -80,10 +83,10 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
     EtchaSketchSerialReciever::EtchaSketchPotValNode* current_pot_node = serial_reciever.pot_vals_head;
 
     /* Based on current_pot_idx_node, how much time have we currently traced */
-    float current_trace_time = 0;
+    accurate_float current_trace_time = 0;
 
     /* Based on all the samples we have buffered to the DAC, what time are we currently at */
-    float current_buffered_trace_time = 0;
+    accurate_float current_buffered_trace_time = 0;
 
     static int streamCallback(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
         /* Get a handle to ourselves */
@@ -91,7 +94,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
 
         /* Guard on the case when we have zero pot value readings as there is nothing to play */
         if (self->serial_reciever.pot_num_values == 0) {
-            std::fill_n(output, frameCount, 0);
+            std::fill_n(output, frameCount * 2, 0);
             return 0;
         }
 
@@ -111,19 +114,22 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                     self->current_pot_node = self->serial_reciever.pot_vals_head;
                 }
                 /* Increment the trace time */
-                self->current_trace_time += (1.0 / self->serial_reciever.pot_num_values) * (1.0 / self->serial_reciever.trace_freq);
+                long double trace_contribution = (1.0 / self->serial_reciever.pot_num_values) * (1.0 / self->serial_reciever.trace_freq);
+                self->current_trace_time += trace_contribution;
+
+                self->serial_reciever.timestamp_contribution_logger.log_if_needed([self, i, frameCount, trace_contribution]() { return std::to_string(i) + " " + std::to_string(frameCount) + " trace contribution " + std::to_string((float)trace_contribution) + " timestamps current_trace_time " + std::to_string((float)self->current_trace_time) + " timestamp buffer_trace_time " + std::to_string((float)self->current_buffered_trace_time); });
             }
 
             /* Retrieve the pot val that we are currently on */
-            float left_pot_val = self->current_pot_node->left_val;
-            float right_pot_val = self->current_pot_node->right_val;
+            long double left_pot_val = self->current_pot_node->left_val;
+            long double right_pot_val = self->current_pot_node->right_val;
 
             /* Convert the pot val into a our sound range [-1, 1]
              * Let's assume the pot range output is linear in [0, 1023]
              */
-            float pot_range_max = 1023.f;
-            float left_pot_sound = (left_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
-            float right_pot_sound = (right_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
+            long double pot_range_max = 1023.f;
+            long double left_pot_sound = (left_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
+            long double right_pot_sound = (right_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
 
             /* Actually fill the sound buffer */
             output[i * 2] = left_pot_sound;
