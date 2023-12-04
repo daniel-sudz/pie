@@ -29,7 +29,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     };
 
     /* Frequency at which to trace the etch a sketch */
-    accurate_float trace_freq = 1e4;
+    std::atomic<accurate_float> trace_freq = 1e4;
 
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
@@ -48,8 +48,12 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
                 tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::abs(left_pot - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::abs(right_pot - pot_vals_tail->right_val)); });
                 process_pot_info((accurate_float)left_pot, (accurate_float)right_pot);
             }
+        } else if (msg.find("KEYBOARDNOTE") != std::string::npos) {
+            float keyboard_freq;
+            sscanf(msg.c_str(), "KEYBOARDNOTE%f", &keyboard_freq);
+            trace_freq = keyboard_freq;
         }
-        pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value"; });
+        pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value and playing at " + std::to_string(trace_freq) + " frequency"; });
     }
 
     /* Processes a new update from the potentiometers */
