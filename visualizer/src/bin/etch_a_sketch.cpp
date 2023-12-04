@@ -121,15 +121,15 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
             }
 
             /* Retrieve the pot val that we are currently on */
-            long double left_pot_val = self->current_pot_node->left_val;
-            long double right_pot_val = self->current_pot_node->right_val;
+            accurate_float left_pot_val = self->current_pot_node->left_val;
+            accurate_float right_pot_val = self->current_pot_node->right_val;
 
             /* Convert the pot val into a our sound range [-1, 1]
              * Let's assume the pot range output is linear in [0, 1023]
              */
-            long double pot_range_max = 1023.f;
-            long double left_pot_sound = (left_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
-            long double right_pot_sound = (right_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
+            accurate_float pot_range_max = 1023.f;
+            accurate_float left_pot_sound = (left_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
+            accurate_float right_pot_sound = (right_pot_val - (pot_range_max / 2)) / (pot_range_max / 2);
 
             /* Actually fill the sound buffer */
             output[i * 2] = left_pot_sound;
