@@ -2,17 +2,17 @@
 
 // put function declarations here:
 
-const int output0 = 10;
-const int output1 = 11;
-const int output2 = 2;
-const int output3 = 3;
+const int output0 = 11;
+const int output1 = 10;
+const int output2 = 9;
+const int output3 = 8;
 
-const int input0 = 4;
-const int input1 = 5;
-const int input2 = 6;
-const int input3 = 7;
-const int input4 = 8;
-const int input5 = 9;
+const int input0 = 2;
+const int input1 = 3;
+const int input2 = 4;
+const int input3 = 5;
+const int input4 = 6;
+const int input5 = 7;
 
 const int pot0 = A0;
 const int pot1 = A1;
@@ -130,10 +130,12 @@ void loop() {
     endPressed = digitalRead(endPin);
     pot0_val = 1023 - analogRead(pot0);
     pot1_val = 1023 - analogRead(pot1);
+
     Serial.print("POTL");
     Serial.print(pot0_val);
     Serial.print("POTR");
     Serial.println(pot1_val);
+
     if (startPressed == 1) {
         Serial.println("START");
     }
