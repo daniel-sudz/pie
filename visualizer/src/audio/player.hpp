@@ -35,10 +35,8 @@ namespace audio {
                 PORTAUDIO_INITIALIZED = true;
             }
             Userdata = get_concrete_handle();
-            printf("This handle :  %p\n", Userdata);
             audio::portaudio_open_stream(&stream, __streamCallback, Userdata);
             audio::portaudio_start_stream(stream);
-            printf("Stream pointer:  %p\n", stream);
         }
         Player() {
         }
