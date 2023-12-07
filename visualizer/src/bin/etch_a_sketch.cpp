@@ -94,10 +94,17 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
 
     static int streamCallback(const float* input, float* output, unsigned long frameCount, const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData) {
         /* Get a handle to ourselves */
+
         EtchaSketchPlayer* self = (EtchaSketchPlayer*)userData;
 
         /* Guard on the case when we have zero pot value readings as there is nothing to play */
         if (self->serial_reciever.pot_num_values == 0) {
+            std::fill_n(output, frameCount * 2, 0);
+            return 0;
+        }
+
+        /* Guard on the case where the frequency is zero (ie. no note is being pressed on the keyboard) */
+        if (self->serial_reciever.trace_freq < 0.01) {
             std::fill_n(output, frameCount * 2, 0);
             return 0;
         }
