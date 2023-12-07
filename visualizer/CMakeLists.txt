@@ -5,15 +5,14 @@ set(CMAKE_CXX_COMPILER g++)
 
 project(HelloWorld LANGUAGES CXX)
 
-if(MACOS)
+if(APPLE)
     add_compile_options(-fsanitize=address)
     add_link_options(-fsanitize=address -march=native)
-endif()
-
-if(UBUNTU)
+elseif(UNIX)
     add_compile_options(-fsanitize=address)
     add_link_options(-fsanitize=address -march=native -latomic)
 endif()
+
 
 
 add_subdirectory(thirdparty/portaudio)
