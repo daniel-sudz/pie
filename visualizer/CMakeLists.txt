@@ -1,11 +1,19 @@
 cmake_minimum_required (VERSION 3.8)
-include(FetchContent)
 
-project(HelloWorld LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_COMPILER g++)
 
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)
+project(HelloWorld LANGUAGES CXX)
+
+if(APPLE)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address -march=native)
+elseif(UNIX)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address -march=native -latomic)
+endif()
+
+
 
 add_subdirectory(thirdparty/portaudio)
 add_subdirectory(thirdparty/libserial)
