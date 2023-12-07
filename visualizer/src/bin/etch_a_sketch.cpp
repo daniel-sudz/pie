@@ -102,6 +102,12 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
             return 0;
         }
 
+        /* Guard on the case where the frequency is zero (ie. no note is being pressed on the keyboard) */
+        if (self->serial_reciever.trace_freq < 0.01) {
+            std::fill_n(output, frameCount * 2, 0);
+            return 0;
+        }
+
         /* -------------  self->serial_reciever.pot_num_values >= 1 after the guard ------------- */
 
         /* Fill the buffer */

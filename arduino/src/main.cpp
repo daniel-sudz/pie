@@ -68,7 +68,7 @@ void setup() {
 
 void loop() {
     /* ------------------------------------  MUX ------------------------------------  */
-    bool mux_input_read[5][4] = {};
+    bool mux_input_read[mux_num_input][mux_num_output] = {};
 
     // read the mux
     for (int mux_output = 0; mux_output < mux_num_output; mux_output++) {
