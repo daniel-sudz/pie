@@ -29,7 +29,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     };
 
     /* Frequency at which to trace the etch a sketch */
-    std::atomic<accurate_float> trace_freq = 1e4;
+    std::atomic<accurate_float> trace_freq = 0.0;
 
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
@@ -96,6 +96,8 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
         /* Get a handle to ourselves */
         EtchaSketchPlayer* self = (EtchaSketchPlayer*)userData;
 
+        self->serial_reciever.timestamp_contribution_logger.log_if_needed([self]() { return "timestamps current_trace_time " + std::to_string(self->current_trace_time) + " timestamp buffer_trace_time " + std::to_string(self->current_buffered_trace_time); });
+
         /* Guard on the case when we have zero pot value readings as there is nothing to play */
         if (self->serial_reciever.pot_num_values == 0) {
             std::fill_n(output, frameCount * 2, 0);
@@ -103,7 +105,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
         }
 
         /* Guard on the case where the frequency is zero (ie. no note is being pressed on the keyboard) */
-        if (self->serial_reciever.trace_freq < 0.01) {
+        if (self->serial_reciever.trace_freq < 100) {
             std::fill_n(output, frameCount * 2, 0);
             return 0;
         }
@@ -126,8 +128,6 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                 /* Increment the trace time */
                 accurate_float trace_contribution = (accurate_float(1) / (accurate_float(self->serial_reciever.pot_num_values) * accurate_float(self->serial_reciever.trace_freq)));
                 self->current_trace_time += trace_contribution;
-
-                self->serial_reciever.timestamp_contribution_logger.log_if_needed([self, i, frameCount, trace_contribution]() { return std::to_string(i) + " " + std::to_string(frameCount) + " trace contribution " + std::to_string(trace_contribution) + " timestamps current_trace_time " + std::to_string(self->current_trace_time) + " timestamp buffer_trace_time " + std::to_string(self->current_buffered_trace_time); });
             }
 
             /* Retrieve the pot val that we are currently on */
