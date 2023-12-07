@@ -6,7 +6,6 @@
 #include <iostream>
 #include <string>
 
-#include "../serial/util.hpp"
 #include "./defaults.hpp"
 
 namespace audio {
@@ -32,9 +31,9 @@ namespace audio {
 
     /* Intializes the portaudio library */
     void portaudio_initialize() {
-        serial::debug_info("started initializing portaudio");
+        audio::debug_info("started initializing portaudio");
         audio::guard_portaudio_error(Pa_Initialize(), "audio::portaudio_initialize()");
-        serial::debug_info("finished initializing portaudio");
+        audio::debug_info("finished initializing portaudio");
     }
 
     /* Terminates the portaudio library */
