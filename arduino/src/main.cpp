@@ -87,7 +87,7 @@ void loop() {
       }
     }
 
-    if (sus_up == 0) {
+    if (sus_up == 1) {
       if (sus_pressed == 0) {
         if (millis()-sus_released > repress_delay){
           sus_pressed = millis();
