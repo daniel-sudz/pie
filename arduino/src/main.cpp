@@ -19,14 +19,19 @@ const int min_duration = 10;
 int pot1_val = 0;
 int pot0_val = 0;
 
-const int startPin = 12;
-const int endPin = 13;
+const int erasePin = 12;
+const int susPin = 13;
 
-bool startPressed = 0;
-bool endPressed = 0;
+bool erase_up = 0;
+bool sus_up = 0;
 
 unsigned long mux_pressed[mux_num_input][mux_num_output] = {};
 unsigned long mux_released[mux_num_input][mux_num_output] = {};
+
+unsigned long erase_pressed = 0;
+unsigned long erase_released = 0;
+unsigned long sus_pressed = 0;
+unsigned long sus_released = 0;
 
 // frequencies for notes on our keyboard
 const char* notes[mux_num_input][mux_num_output] = {
@@ -57,27 +62,48 @@ void setup() {
     pinMode(pot1, INPUT);
 
     // configure start/stop pins
-    pinMode(startPin, INPUT_PULLUP);
-    pinMode(endPin, INPUT_PULLUP);
+    pinMode(erasePin, INPUT_PULLUP);
+    pinMode(susPin, INPUT_PULLUP);
 }
 
 void loop() {
   /* ------------------------------------ Etch-a-Sketch ------------------------------ */
-    startPressed = digitalRead(startPin);
-    endPressed = digitalRead(endPin);
+    erase_up = digitalRead(erasePin);
+    sus_up = digitalRead(susPin);
     pot0_val = analogRead(pot0);
     pot1_val = analogRead(pot1);
+
+    if (erase_up == 0) {
+      if (erase_pressed == 0) {
+        if (millis()-erase_released > repress_delay){
+          Serial.println("ERASE");
+          erase_pressed = millis();
+        }
+      }
+    } else {
+      if (millis() - erase_pressed > min_duration) {
+        erase_pressed = 0;
+        erase_released = millis();
+      }
+    }
+
+    if (sus_up == 0) {
+      if (sus_pressed == 0) {
+        if (millis()-sus_released > repress_delay){
+          sus_pressed = millis();
+        }
+      }
+    } else {
+      if (millis() - sus_pressed > min_duration) {
+        sus_pressed = 0;
+        sus_released = millis();
+      }
+    }
 
     Serial.print(pot0_val);
     Serial.print(",");
     Serial.print(pot1_val);
 
-    if (startPressed == 0) {
-        Serial.println("START");
-    }
-    if (endPressed == 0) {
-        Serial.println("END");
-    }
     /* ------------------------------------ Etch-a-Sketch ------------------------------ */
     /* ------------------------------------  MUX ------------------------------------  */
     // read the mux
@@ -94,12 +120,18 @@ void loop() {
                   Serial.print(",");
                   Serial.print(notes[mux_input][mux_output]);
                 }
-            } else {
+            } else if (sus_pressed == 0) {
                 if (mux_pressed[mux_input][mux_output]) {
                     if(millis() - mux_pressed[mux_input][mux_output] > min_duration) {
                         mux_pressed[mux_input][mux_output] = 0;
+                        mux_released[mux_input][mux_output] = millis();
                     }
                 }
+            } else {
+              if (mux_pressed[mux_input][mux_output]) {
+                  Serial.print(",");
+                  Serial.print(notes[mux_input][mux_output]);
+              }
             }
         }
         digitalWrite(mux_output_pins[mux_output], LOW);
