@@ -13,6 +13,9 @@ const int mux_num_output = sizeof(mux_output_pins) / sizeof(mux_output_pins[0]);
 const int pot0 = A0;
 const int pot1 = A1;
 
+const int repress_delay = 10;
+const int min_duration = 10;
+
 int pot1_val = 0;
 int pot0_val = 0;
 
@@ -21,6 +24,9 @@ const int endPin = 13;
 
 bool startPressed = 0;
 bool endPressed = 0;
+
+unsigned long mux_pressed[mux_num_input][mux_num_output] = {};
+unsigned long mux_released[mux_num_input][mux_num_output] = {};
 
 // frequencies for notes on our keyboard
 const char* notes[mux_num_input][mux_num_output] = {
@@ -31,17 +37,6 @@ const char* notes[mux_num_input][mux_num_output] = {
     {"277.18", "329.63", "392.00", "466.16"},
     {"293.66", "349.23", "415.30", "493.88"},
 };
-
-// figures out which note is being pressed based on mux state
-void printNote(bool* inputArray, const char** noteArray, bool& note_printed) {
-    for (int i = 0; i < 4; i++) {
-        if (inputArray[i] == 1) {
-            Serial.print("KEYBOARDNOTE");
-            Serial.println(noteArray[i]);
-            note_printed = true;
-        }
-    }
-}
 
 void setup() {
     // put your setup code here, to run once:
@@ -62,50 +57,55 @@ void setup() {
     pinMode(pot1, INPUT);
 
     // configure start/stop pins
-    pinMode(startPin, INPUT);
-    pinMode(endPin, INPUT);
+    pinMode(startPin, INPUT_PULLUP);
+    pinMode(endPin, INPUT_PULLUP);
 }
 
 void loop() {
-    /* ------------------------------------  MUX ------------------------------------  */
-    bool mux_input_read[mux_num_input][mux_num_output] = {};
+  /* ------------------------------------ Etch-a-Sketch ------------------------------ */
+    startPressed = digitalRead(startPin);
+    endPressed = digitalRead(endPin);
+    pot0_val = analogRead(pot0);
+    pot1_val = analogRead(pot1);
 
+    Serial.print(pot0_val);
+    Serial.print(",");
+    Serial.print(pot1_val);
+
+    if (startPressed == 0) {
+        Serial.println("START");
+    }
+    if (endPressed == 0) {
+        Serial.println("END");
+    }
+    /* ------------------------------------ Etch-a-Sketch ------------------------------ */
+    /* ------------------------------------  MUX ------------------------------------  */
     // read the mux
     for (int mux_output = 0; mux_output < mux_num_output; mux_output++) {
         digitalWrite(mux_output_pins[mux_output], HIGH);
         for (int mux_input = 0; mux_input < mux_num_input; mux_input++) {
-            mux_input_read[mux_input][mux_output] = digitalRead(mux_input_pins[mux_input]);
+            bool key_down = digitalRead(mux_input_pins[mux_input]);
+            if (key_down) {
+                if (mux_pressed[mux_input][mux_output] == 0) {
+                    if(millis() - mux_released[mux_input][mux_output] > repress_delay) {
+                        mux_pressed[mux_input][mux_output] = millis();
+                    }
+                } else {
+                  Serial.print(",");
+                  Serial.print(notes[mux_input][mux_output]);
+                }
+            } else {
+                if (mux_pressed[mux_input][mux_output]) {
+                    if(millis() - mux_pressed[mux_input][mux_output] > min_duration) {
+                        mux_pressed[mux_input][mux_output] = 0;
+                    }
+                }
+            }
         }
         digitalWrite(mux_output_pins[mux_output], LOW);
     }
 
-    // print note being pressed out from the mux state
-    bool note_printed = false;
-    for (int mux_input = 0; mux_input < mux_num_input; mux_input++) {
-        printNote(mux_input_read[mux_input], notes[mux_input], note_printed);
-    }
-    if (!note_printed) {
-        Serial.println("KEYBOARDNOTE0.00");
-    }
+    Serial.print("\n");
 
     /* ------------------------------------  MUX ------------------------------------  */
-
-    /* ------------------------------------ Etch-a-Sketch ------------------------------ */
-    startPressed = digitalRead(startPin);
-    endPressed = digitalRead(endPin);
-    pot0_val = 1023 - analogRead(pot0);
-    pot1_val = 1023 - analogRead(pot1);
-
-    Serial.print("POTL");
-    Serial.print(pot0_val);
-    Serial.print("POTR");
-    Serial.println(pot1_val);
-
-    if (startPressed == 1) {
-        Serial.println("START");
-    }
-    if (endPressed == 1) {
-        Serial.println("END");
-    }
-    /* ------------------------------------ Etch-a-Sketch ------------------------------ */
 }
