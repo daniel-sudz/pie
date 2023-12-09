@@ -30,41 +30,48 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     };
 
     /* Frequency at which to trace the etch a sketch */
-    std::atomic<accurate_float> trace_freq = 0.0;
-    // frequencies for notes on our keyboard
-    const double notes[] = {
-        130.81,
-        155.56,
-        185.00,
-        220.00,
-        138.59,
-        164.81,
-        196.00,
-        233.08,
-        146.83,
-        174.61,
-        207.65,
-        246.94,
-        261.63,
-        311.13,
-        369.99,
-        440.00,
-        "277.18",
-        "329.63",
-        "392.00",
-        "466.16",
-        "293.66",
-        "349.23",
-        "415.30",
-        "493.88"};
-    const bool** notes_pressed = nullptr;
+    std::atomic<uint32_t> trace_freqs = 0;
 
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
     std::atomic<int> pot_num_values = 0;
     static_assert(std::atomic<int>::is_always_lock_free, "int should be lock-free to avoid undefined behaviour");
 
-    void process_message(std::string msg) {
+    /* Lookup table for how to decode KEYBOARDNOTES bit field */
+    keyboardnotes_lookup_table = {
+        130.81,
+        155.56,
+        185.00,
+        220.00,
+        //
+        138.59,
+        164.81,
+        196.00,
+        233.08,
+        //
+        146.83,
+        174.61,
+        207.65,
+        246.94
+        //
+        261.63,
+        311.13,
+        369.99,
+        440.00
+        //
+        277.18,
+        329.63,
+        392.00,
+        466.16
+        //
+        293.66,
+        349.23,
+        415.30,
+        493.88
+    }
+
+    void
+    process_message(std::string msg) {
         // POTL<left pot value>POTR<right pot value>
         if (msg.find("POTL") != std::string::npos && msg.find("POTR") != std::string::npos) {
             int left_pot;
@@ -77,22 +84,11 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
                 process_pot_info((accurate_float)left_pot, (accurate_float)right_pot);
             }
         } else if (msg.find("KEYBOARDNOTES") != std::string::npos) {
-            bool* new_notes_pressed = malloc(sizeof(notes));
-
-            std::string accum;
-            for (int i = ("KEYBOARDNOTES").size(); i < msg.size(); i++) {
-                if (i != ",") {
-                    accum += msg[i];
-                }
-                if (i == "," || i == msg.size() - 1) {
-                    float freq = std::stof(accum);
-                    for (int j = 0; j < )
-                }
-            }
-            sscanf(msg.c_str(), "KEYBOARDNOTE%f", &keyboard_freq);
-            trace_freq = keyboard_freq;
+            int new_trace_freqs;
+            sscanf(msg.c_str(), "KEYBOARDNOTES%d", &new_trace_freqs);
+            trace_freqs = new_trace_freqs;
         }
-        pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value and playing at " + std::to_string(trace_freq) + " frequency"; });
+        pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value and playing freq " + std::to_string(new_trace_freqs) + " frequency"; });
     }
 
     /* Processes a new update from the potentiometers */
@@ -144,7 +140,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
         }
 
         /* Guard on the case where the frequency is zero (ie. no note is being pressed on the keyboard) */
-        if (self->serial_reciever.trace_freq < 100) {
+        if (self->serial_reciever.trace_freqs == 0) {
             std::fill_n(output, frameCount * 2, 0);
             return 0;
         }
@@ -164,9 +160,16 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                     self->current_pot_idx_node = 0;
                     self->current_pot_node = self->serial_reciever.pot_vals_head;
                 }
-                /* Increment the trace time */
-                accurate_float trace_contribution = (accurate_float(1) / (accurate_float(self->serial_reciever.pot_num_values) * accurate_float(self->serial_reciever.trace_freq)));
-                self->current_trace_time += trace_contribution;
+
+                /* Increment the trace times */
+                for (uint32_t note = 0; note < 30; note++) {
+                    uint32_t note_field = (uint32_t(1) << note);
+                    if (self->serial_reciever.trace_freqs & note_field) {
+                        accurate_float note_freq = accurate_float(keyboardnotes_lookup_table[note]);
+                        accurate_float trace_contribution = (accurate_float(1) / (accurate_float(self->serial_reciever.pot_num_values) * note_freq));
+                        self->current_trace_time += trace_contribution;
+                    }
+                }
             }
 
             /* Retrieve the pot val that we are currently on */
