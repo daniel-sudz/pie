@@ -31,6 +31,33 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
 
     /* Frequency at which to trace the etch a sketch */
     std::atomic<accurate_float> trace_freq = 0.0;
+    // frequencies for notes on our keyboard
+    const double notes[] = {
+        130.81,
+        155.56,
+        185.00,
+        220.00,
+        138.59,
+        164.81,
+        196.00,
+        233.08,
+        146.83,
+        174.61,
+        207.65,
+        246.94,
+        261.63,
+        311.13,
+        369.99,
+        440.00,
+        "277.18",
+        "329.63",
+        "392.00",
+        "466.16",
+        "293.66",
+        "349.23",
+        "415.30",
+        "493.88"};
+    const bool** notes_pressed = nullptr;
 
     EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
     EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
@@ -49,8 +76,19 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
                 tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::fabs(accurate_float(left_pot) - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::fabs(accurate_float(right_pot) - pot_vals_tail->right_val)); });
                 process_pot_info((accurate_float)left_pot, (accurate_float)right_pot);
             }
-        } else if (msg.find("KEYBOARDNOTE") != std::string::npos) {
-            float keyboard_freq;
+        } else if (msg.find("KEYBOARDNOTES") != std::string::npos) {
+            bool* new_notes_pressed = malloc(sizeof(notes));
+
+            std::string accum;
+            for (int i = ("KEYBOARDNOTES").size(); i < msg.size(); i++) {
+                if (i != ",") {
+                    accum += msg[i];
+                }
+                if (i == "," || i == msg.size() - 1) {
+                    float freq = std::stof(accum);
+                    for (int j = 0; j < )
+                }
+            }
             sscanf(msg.c_str(), "KEYBOARDNOTE%f", &keyboard_freq);
             trace_freq = keyboard_freq;
         }
