@@ -2,17 +2,20 @@ cmake_minimum_required (VERSION 3.8)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_COMPILER g++)
+set(CMAKE_CXX_FLAGS)
 
-project(HelloWorld LANGUAGES CXX)
+project(Visualizer LANGUAGES CXX)
 
+# link std::atomic properly based on platform
 if(APPLE)
-    add_compile_options(-fsanitize=address)
-    add_link_options(-fsanitize=address -march=native)
+    add_link_options(-march=native)
 elseif(UNIX)
-    add_compile_options(-fsanitize=address)
-    add_link_options(-fsanitize=address -march=native -latomic)
+    add_link_options( -march=native -latomic)
 endif()
 
+# enable debug mode
+add_compile_options(-fsanitize=address -g)
+add_link_options(-fsanitize=address -g)
 
 
 add_subdirectory(thirdparty/portaudio)
