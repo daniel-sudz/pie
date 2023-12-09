@@ -67,42 +67,41 @@ void setup() {
 }
 
 void loop() {
-  /* ------------------------------------ Etch-a-Sketch ------------------------------ */
+    /* ------------------------------------ Etch-a-Sketch ------------------------------ */
     erase_up = digitalRead(erasePin);
     sus_up = digitalRead(susPin);
     pot0_val = analogRead(pot0);
     pot1_val = analogRead(pot1);
 
     if (erase_up == 0) {
-      if (erase_pressed == 0) {
-        if (millis()-erase_released > repress_delay){
-          Serial.println("ERASE");
-          erase_pressed = millis();
+        if (erase_pressed == 0) {
+            if (millis() - erase_released > repress_delay) {
+                Serial.println("ERASE");
+                erase_pressed = millis();
+            }
         }
-      }
     } else {
-      if (millis() - erase_pressed > min_duration) {
-        erase_pressed = 0;
-        erase_released = millis();
-      }
+        if (millis() - erase_pressed > min_duration) {
+            erase_pressed = 0;
+            erase_released = millis();
+        }
     }
 
     if (sus_up == 1) {
-      if (sus_pressed == 0) {
-        if (millis()-sus_released > repress_delay){
-          sus_pressed = millis();
+        if (sus_pressed == 0) {
+            if (millis() - sus_released > repress_delay) {
+                sus_pressed = millis();
+            }
         }
-      }
     } else {
-      if (millis() - sus_pressed > min_duration) {
-        sus_pressed = 0;
-        sus_released = millis();
-      }
+        if (millis() - sus_pressed > min_duration) {
+            sus_pressed = 0;
+            sus_released = millis();
+        }
     }
-
+    Serial.print("POTL");
     Serial.print(pot0_val);
-    Serial.print(",");
-    Serial.print(pot1_val);
+    Serial.println("POTR");
 
     /* ------------------------------------ Etch-a-Sketch ------------------------------ */
     /* ------------------------------------  MUX ------------------------------------  */
@@ -113,25 +112,25 @@ void loop() {
             bool key_down = digitalRead(mux_input_pins[mux_input]);
             if (key_down) {
                 if (mux_pressed[mux_input][mux_output] == 0) {
-                    if(millis() - mux_released[mux_input][mux_output] > repress_delay) {
+                    if (millis() - mux_released[mux_input][mux_output] > repress_delay) {
                         mux_pressed[mux_input][mux_output] = millis();
                     }
                 } else {
-                  Serial.print(",");
-                  Serial.print(notes[mux_input][mux_output]);
+                    Serial.print(",");
+                    Serial.print(notes[mux_input][mux_output]);
                 }
             } else if (sus_pressed == 0) {
                 if (mux_pressed[mux_input][mux_output]) {
-                    if(millis() - mux_pressed[mux_input][mux_output] > min_duration) {
+                    if (millis() - mux_pressed[mux_input][mux_output] > min_duration) {
                         mux_pressed[mux_input][mux_output] = 0;
                         mux_released[mux_input][mux_output] = millis();
                     }
                 }
             } else {
-              if (mux_pressed[mux_input][mux_output]) {
-                  Serial.print(",");
-                  Serial.print(notes[mux_input][mux_output]);
-              }
+                if (mux_pressed[mux_input][mux_output]) {
+                    Serial.print(",");
+                    Serial.print(notes[mux_input][mux_output]);
+                }
             }
         }
         digitalWrite(mux_output_pins[mux_output], LOW);
