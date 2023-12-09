@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.9'
 
-      # [UBUNTU ONLY BEGIN] ------------------------------------------------------------- [UBUNTU ONLY BEGIN]
+      # [UBUNTU ONLY BEGIN] -------------------------------------------------------------
       - name: Install C++ Compiler Tool Chain [UBUNTU]
         run: sudo apt-get install -y gcc make cmake clang-format clang-tidy
         if: matrix.os == 'ubuntu-latest'
@@ -29,7 +29,14 @@ jobs:
         run: sudo apt-get install -y doxygen pulseaudio libboost-all-dev graphviz
         if: matrix.os == 'ubuntu-latest'
         
-      # [UBUNTU ONLY END] ------------------------------------------------------------- [UBUNTU ONLY END]
+      # -------------------------------------------------------------------------------
+
+      # [MACOS ONLY BEGIN] ------------------------------------------------------------
+      - name: Install Portaudio Dependency chain [MACOS]
+        run: brew install jack 
+        if: matrix.os == 'macos-latest'
+
+      # -------------------------------------------------------------------------------
           
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
