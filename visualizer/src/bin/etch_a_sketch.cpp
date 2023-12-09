@@ -38,7 +38,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     static_assert(std::atomic<int>::is_always_lock_free, "int should be lock-free to avoid undefined behaviour");
 
     /* Lookup table for how to decode KEYBOARDNOTES bit field */
-    keyboardnotes_lookup_table = {
+    float keyboardnotes_lookup_table[30] = {
         130.81,
         155.56,
         185.00,
@@ -52,23 +52,22 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
         146.83,
         174.61,
         207.65,
-        246.94
+        246.94,
         //
         261.63,
         311.13,
         369.99,
-        440.00
+        440.00,
         //
         277.18,
         329.63,
         392.00,
-        466.16
+        466.16,
         //
         293.66,
         349.23,
         415.30,
-        493.88
-    }
+        493.88};
 
     void
     process_message(std::string msg) {
@@ -87,8 +86,11 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
             int new_trace_freqs;
             sscanf(msg.c_str(), "KEYBOARDNOTES%d", &new_trace_freqs);
             trace_freqs = new_trace_freqs;
+        } else if (msg.find("ERASE") != std::string::npos) {
+            // restart the program
+            exit(0);
         }
-        pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value and playing freq " + std::to_string(new_trace_freqs) + " frequency"; });
+        pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value and playing freq " + std::to_string(trace_freqs) + " frequency"; });
     }
 
     /* Processes a new update from the potentiometers */
@@ -165,7 +167,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                 for (uint32_t note = 0; note < 30; note++) {
                     uint32_t note_field = (uint32_t(1) << note);
                     if (self->serial_reciever.trace_freqs & note_field) {
-                        accurate_float note_freq = accurate_float(keyboardnotes_lookup_table[note]);
+                        accurate_float note_freq = accurate_float(self->serial_reciever.keyboardnotes_lookup_table[note]);
                         accurate_float trace_contribution = (accurate_float(1) / (accurate_float(self->serial_reciever.pot_num_values) * note_freq));
                         self->current_trace_time += trace_contribution;
                     }
