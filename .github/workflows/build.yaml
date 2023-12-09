@@ -24,18 +24,18 @@ jobs:
       # [UBUNTU ONLY BEGIN] -------------------------------------------------------------
       - name: Install C++ Compiler Tool Chain [UBUNTU]
         run: sudo apt-get install -y gcc make cmake clang-format clang-tidy
-        if: matrix.os == 'ubuntu-latest'
+        if: contains(matrix.os, 'ubuntu')
 
       - name: Install Portaudio Dependency chain [UBUNTU]
         run: sudo apt-get install -y doxygen pulseaudio libboost-all-dev graphviz
-        if: matrix.os == 'ubuntu-latest'
+        if: contains(matrix.os, 'ubuntu')
         
       # -------------------------------------------------------------------------------
 
       # [MACOS ONLY BEGIN] ------------------------------------------------------------
       - name: Install Portaudio Dependency chain [MACOS]
         run: brew install jack doxygen boost
-        if: matrix.os == 'macos-latest'
+        if: contains(matrix.os, 'macos')
 
       # -------------------------------------------------------------------------------
           
