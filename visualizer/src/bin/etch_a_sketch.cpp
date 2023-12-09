@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <iostream>
 #include <sstream>
-#include <stdlib>
 #include <string>
 
 #include "../../thirdparty/portaudio/include/portaudio.h"
