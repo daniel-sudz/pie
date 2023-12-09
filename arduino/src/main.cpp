@@ -43,6 +43,12 @@ const char* notes[mux_num_input][mux_num_output] = {
     {"293.66", "349.23", "415.30", "493.88"},
 };
 
+/* Marks a note as being pressed using a bitfield approach */
+void set_note_field(uint32_t& note, uint32_t mux_input, uint32_t mux_output) {
+    uint32_t field = (uint32_t(1) << uint32_t(((mux_input * mux_num_output) + mux_output)));
+    note |= field;
+}
+
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
@@ -67,77 +73,77 @@ void setup() {
 }
 
 void loop() {
-  /* ------------------------------------ Etch-a-Sketch ------------------------------ */
+    /* ------------------------------------ Etch-a-Sketch ------------------------------ */
     erase_up = digitalRead(erasePin);
     sus_up = digitalRead(susPin);
     pot0_val = analogRead(pot0);
     pot1_val = analogRead(pot1);
 
     if (erase_up == 0) {
-      if (erase_pressed == 0) {
-        if (millis()-erase_released > repress_delay){
-          Serial.println("ERASE");
-          erase_pressed = millis();
+        if (erase_pressed == 0) {
+            if (millis() - erase_released > repress_delay) {
+                Serial.println("ERASE");
+                erase_pressed = millis();
+            }
         }
-      }
     } else {
-      if (millis() - erase_pressed > min_duration) {
-        erase_pressed = 0;
-        erase_released = millis();
-      }
+        if (millis() - erase_pressed > min_duration) {
+            erase_pressed = 0;
+            erase_released = millis();
+        }
     }
 
     if (sus_up == 1) {
-      if (sus_pressed == 0) {
-        if (millis()-sus_released > repress_delay){
-          sus_pressed = millis();
+        if (sus_pressed == 0) {
+            if (millis() - sus_released > repress_delay) {
+                sus_pressed = millis();
+            }
         }
-      }
     } else {
-      if (millis() - sus_pressed > min_duration) {
-        sus_pressed = 0;
-        sus_released = millis();
-      }
+        if (millis() - sus_pressed > min_duration) {
+            sus_pressed = 0;
+            sus_released = millis();
+        }
     }
-
+    Serial.print("POTL");
     Serial.print(pot0_val);
-    Serial.print(",");
-    Serial.print(pot1_val);
+    Serial.print("POTR");
+    Serial.println(pot1_val);
 
     /* ------------------------------------ Etch-a-Sketch ------------------------------ */
     /* ------------------------------------  MUX ------------------------------------  */
     // read the mux
+    uint32_t notes_pressed = 0;
     for (int mux_output = 0; mux_output < mux_num_output; mux_output++) {
         digitalWrite(mux_output_pins[mux_output], HIGH);
         for (int mux_input = 0; mux_input < mux_num_input; mux_input++) {
             bool key_down = digitalRead(mux_input_pins[mux_input]);
             if (key_down) {
                 if (mux_pressed[mux_input][mux_output] == 0) {
-                    if(millis() - mux_released[mux_input][mux_output] > repress_delay) {
+                    if (millis() - mux_released[mux_input][mux_output] > repress_delay) {
                         mux_pressed[mux_input][mux_output] = millis();
                     }
                 } else {
-                  Serial.print(",");
-                  Serial.print(notes[mux_input][mux_output]);
+                    set_note_field(notes_pressed, (uint32_t)mux_input, (uint32_t)mux_output);
                 }
             } else if (sus_pressed == 0) {
                 if (mux_pressed[mux_input][mux_output]) {
-                    if(millis() - mux_pressed[mux_input][mux_output] > min_duration) {
+                    if (millis() - mux_pressed[mux_input][mux_output] > min_duration) {
                         mux_pressed[mux_input][mux_output] = 0;
                         mux_released[mux_input][mux_output] = millis();
                     }
                 }
             } else {
-              if (mux_pressed[mux_input][mux_output]) {
-                  Serial.print(",");
-                  Serial.print(notes[mux_input][mux_output]);
-              }
+                if (mux_pressed[mux_input][mux_output]) {
+                    set_note_field(notes_pressed, (uint32_t)mux_input, (uint32_t)mux_output);
+                }
             }
         }
         digitalWrite(mux_output_pins[mux_output], LOW);
     }
 
-    Serial.print("\n");
-
+    /* print the notes being pressed */
+    Serial.print("KEYBOARDNOTES");
+    Serial.println(notes_pressed);
     /* ------------------------------------  MUX ------------------------------------  */
 }
