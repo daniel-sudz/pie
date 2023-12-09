@@ -33,7 +33,7 @@ jobs:
 
       # [MACOS ONLY BEGIN] ------------------------------------------------------------
       - name: Install Portaudio Dependency chain [MACOS]
-        run: brew install jack 
+        run: brew install jack doxygen
         if: matrix.os == 'macos-latest'
 
       # -------------------------------------------------------------------------------
