@@ -43,6 +43,11 @@ const char* notes[mux_num_input][mux_num_output] = {
     {"293.66", "349.23", "415.30", "493.88"},
 };
 
+/* Marks a note as being pressed using a bitfield approach */
+void set_note_field(unsigned int& note, int mux_input, int mux_output) {
+    note |= (1 << ((mux_input * mux_num_output + mux_output)));
+}
+
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
@@ -101,11 +106,13 @@ void loop() {
     }
     Serial.print("POTL");
     Serial.print(pot0_val);
-    Serial.println("POTR");
+    Serial.print("POTR");
+    Serial.println(pot1_val);
 
     /* ------------------------------------ Etch-a-Sketch ------------------------------ */
     /* ------------------------------------  MUX ------------------------------------  */
     // read the mux
+    unsigned int notes_pressed = 0;
     for (int mux_output = 0; mux_output < mux_num_output; mux_output++) {
         digitalWrite(mux_output_pins[mux_output], HIGH);
         for (int mux_input = 0; mux_input < mux_num_input; mux_input++) {
@@ -116,8 +123,7 @@ void loop() {
                         mux_pressed[mux_input][mux_output] = millis();
                     }
                 } else {
-                    Serial.print(",");
-                    Serial.print(notes[mux_input][mux_output]);
+                    set_note_field(notes_pressed, mux_input, mux_output);
                 }
             } else if (sus_pressed == 0) {
                 if (mux_pressed[mux_input][mux_output]) {
@@ -128,15 +134,15 @@ void loop() {
                 }
             } else {
                 if (mux_pressed[mux_input][mux_output]) {
-                    Serial.print(",");
-                    Serial.print(notes[mux_input][mux_output]);
+                    set_note_field(notes_pressed, mux_input, mux_output);
                 }
             }
         }
         digitalWrite(mux_output_pins[mux_output], LOW);
     }
 
-    Serial.print("\n");
-
+    /* print the notes being pressed */
+    Serial.print("KEYBOARDNOTES");
+    Serial.println(notes_pressed);
     /* ------------------------------------  MUX ------------------------------------  */
 }
