@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cstdlib>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <sstream>
