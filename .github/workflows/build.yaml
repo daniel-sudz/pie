@@ -4,7 +4,12 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+
+    strategy: 
+      matrix: 
+        os: [ubuntu-latest, macos-latest]
+      
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
@@ -15,11 +20,16 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install C++ Compiler Tool Chain
+      # [UBUNTU ONLY BEGIN] ------------------------------------------------------------- [UBUNTU ONLY BEGIN]
+      - name: Install C++ Compiler Tool Chain [UBUNTU]
         run: sudo apt-get install -y gcc make cmake clang-format clang-tidy
+        if: matrix.os == 'ubuntu-latest'
 
-      - name: Install Portaudio Dependency chain
+      - name: Install Portaudio Dependency chain [UBUNTU]
         run: sudo apt-get install -y doxygen pulseaudio libboost-all-dev graphviz
+        if: matrix.os == 'ubuntu-latest'
+        
+      # [UBUNTU ONLY END] ------------------------------------------------------------- [UBUNTU ONLY END]
           
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
