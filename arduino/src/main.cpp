@@ -44,8 +44,9 @@ const char* notes[mux_num_input][mux_num_output] = {
 };
 
 /* Marks a note as being pressed using a bitfield approach */
-void set_note_field(unsigned int& note, int mux_input, int mux_output) {
-    note |= (1 << ((mux_input * mux_num_output + mux_output)));
+void set_note_field(uint32_t& note, uint32_t mux_input, uint32_t mux_output) {
+    uint32_t field = (uint32_t(1) << uint32_t(((mux_input * mux_num_output) + mux_output)));
+    note |= field;
 }
 
 void setup() {
@@ -112,7 +113,7 @@ void loop() {
     /* ------------------------------------ Etch-a-Sketch ------------------------------ */
     /* ------------------------------------  MUX ------------------------------------  */
     // read the mux
-    unsigned int notes_pressed = 0;
+    uint32_t notes_pressed = 0;
     for (int mux_output = 0; mux_output < mux_num_output; mux_output++) {
         digitalWrite(mux_output_pins[mux_output], HIGH);
         for (int mux_input = 0; mux_input < mux_num_input; mux_input++) {
@@ -123,7 +124,7 @@ void loop() {
                         mux_pressed[mux_input][mux_output] = millis();
                     }
                 } else {
-                    set_note_field(notes_pressed, mux_input, mux_output);
+                    set_note_field(notes_pressed, (uint32_t)mux_input, (uint32_t)mux_output);
                 }
             } else if (sus_pressed == 0) {
                 if (mux_pressed[mux_input][mux_output]) {
@@ -134,7 +135,7 @@ void loop() {
                 }
             } else {
                 if (mux_pressed[mux_input][mux_output]) {
-                    set_note_field(notes_pressed, mux_input, mux_output);
+                    set_note_field(notes_pressed, (uint32_t)mux_input, (uint32_t)mux_output);
                 }
             }
         }
