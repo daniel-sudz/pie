@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
-#include <cstdlib>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <sstream>
@@ -45,8 +45,8 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
             sscanf(msg.c_str(), "POTL%dPOTR%d", &left_pot, &right_pot);
             pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot) + " TailL: " + std::to_string(pot_vals_tail->left_val) + " TailR: " + std::to_string(pot_vals_tail->right_val)); });
             /* Make sure some change some happened instead of continuously appending the same value */
-            if ((std::abs(accurate_float(left_pot) - pot_vals_tail->left_val) >= 5) || (std::abs(accurate_float(right_pot) - pot_vals_tail->right_val) >= 5)) {
-                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::abs(accurate_float(left_pot) - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::abs(accurate_float(right_pot) - pot_vals_tail->right_val)); });
+            if ((std::fabs(accurate_float(left_pot) - pot_vals_tail->left_val) >= 5) || (std::fabs(accurate_float(right_pot) - pot_vals_tail->right_val) >= 5)) {
+                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::fabs(accurate_float(left_pot) - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::fabs(accurate_float(right_pot) - pot_vals_tail->right_val)); });
                 process_pot_info((accurate_float)left_pot, (accurate_float)right_pot);
             }
         } else if (msg.find("KEYBOARDNOTE") != std::string::npos) {
