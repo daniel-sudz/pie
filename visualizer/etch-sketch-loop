@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+# when the reset button is pressed, this signals to re-start the etch-sketch program
+while :
+do
+  sudo ./out/src/EtchSketch
+done
