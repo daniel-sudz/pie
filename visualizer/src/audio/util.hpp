@@ -1,8 +1,8 @@
 #pragma once
 
 #include <stdio.h>
-#include <stdlib.h>
 
+#include <cstdlib>
 #include <iostream>
 #include <string>
 
@@ -63,7 +63,12 @@ namespace audio {
             audio::debug_info("[INFO: AUDIO]: FOUND THE SCHIIT BOX");
 
             /* SCHIIT BOX settings */
-            const PaStreamParameters output_parameters = {.channelCount = 2, .device = the_schiit_box, .sampleFormat = paFloat32};
+            const PaStreamParameters output_parameters = {
+                .device = the_schiit_box,
+                .channelCount = 2,
+                .sampleFormat = paFloat32,
+                .suggestedLatency = PaTime(5.0),
+                .hostApiSpecificStreamInfo = nullptr};
 
             /* Check for sample rate compatibility*/
             audio::guard_portaudio_error(Pa_IsFormatSupported(NULL, &output_parameters, audio::sample_rate));
