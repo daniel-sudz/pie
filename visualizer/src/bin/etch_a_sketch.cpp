@@ -20,23 +20,21 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     serial::DebugLogTimer pot_count_debug_logger = serial::DebugLogTimer(1000);
     serial::DebugLogTimer pot_value_debug_logger = serial::DebugLogTimer(1000);
     serial::DebugLogTimer timestamp_contribution_logger = serial::DebugLogTimer(1000);
-    serial::DebugLogTimer tmp_logger_1 = serial::DebugLogTimer(1000);
 
-    /* Linked list node to store potentiometer values */
-    struct EtchaSketchPotValNode {
+    /* Preallocate potentiometer values */
+
+    struct EtchaSketchPotVal {
         accurate_float left_val = 0;
         accurate_float right_val = 0;
-        EtchaSketchPotValNode* prev = nullptr;
-        EtchaSketchPotValNode* next = nullptr;
     };
+    EtchaSketchPotVal pot_vals[1000 * 60 * 60];
+    std::atomic<int> pot_num_values = 0;
+
+    /* Check atomic property */
+    static_assert(std::atomic<int>::is_always_lock_free, "int should be lock-free to avoid undefined behaviour");
 
     /* Frequency at which to trace the etch a sketch */
     std::atomic<uint32_t> trace_freqs = 0;
-
-    EtchaSketchPotValNode* pot_vals_head = new EtchaSketchPotValNode;
-    EtchaSketchPotValNode* pot_vals_tail = pot_vals_head;
-    std::atomic<int> pot_num_values = 0;
-    static_assert(std::atomic<int>::is_always_lock_free, "int should be lock-free to avoid undefined behaviour");
 
     /* Lookup table for how to decode KEYBOARDNOTES bit field */
     float keyboardnotes_lookup_table[30] = {
@@ -77,10 +75,9 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
             int left_pot;
             int right_pot;
             sscanf(msg.c_str(), "POTL%dPOTR%d", &left_pot, &right_pot);
-            pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot) + " TailL: " + std::to_string(pot_vals_tail->left_val) + " TailR: " + std::to_string(pot_vals_tail->right_val)); });
+            pot_value_debug_logger.log_if_needed([left_pot, right_pot, this]() { return ("PotL: " + std::to_string(left_pot) + " PotR: " + std::to_string(right_pot)); });
             /* Make sure some change some happened instead of continuously appending the same value */
-            if ((std::fabs(accurate_float(left_pot) - pot_vals_tail->left_val) >= 5) || (std::fabs(accurate_float(right_pot) - pot_vals_tail->right_val) >= 5)) {
-                tmp_logger_1.log_if_needed([this, left_pot, right_pot]() { return std::to_string(std::fabs(accurate_float(left_pot) - pot_vals_tail->left_val)) + " r diff " + std::to_string(std::fabs(accurate_float(right_pot) - pot_vals_tail->right_val)); });
+            if (pot_num_values == 0 || (std::fabs(accurate_float(left_pot) - pot_vals[pot_num_values - 1].left_val) >= 5) || (std::fabs(accurate_float(right_pot) - pot_vals[pot_num_values - 1].right_val) >= 5)) {
                 process_pot_info((accurate_float)left_pot, (accurate_float)right_pot);
             }
         } else if (msg.find("KEYBOARDNOTES") != std::string::npos) {
@@ -98,18 +95,14 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     void process_pot_info(accurate_float left_pot, accurate_float right_pot) {
         /* Set the first value */
         if (pot_num_values == 0) {
-            pot_vals_head->left_val = left_pot;
-            pot_vals_head->right_val = right_pot;
+            pot_vals[0].left_val = left_pot;
+            pot_vals[0].right_val = right_pot;
             pot_num_values = 1;
         }
         /* Set the next value */
         else {
-            pot_vals_tail->next = new EtchaSketchPotValNode;
-            pot_vals_tail->next->prev = pot_vals_tail;
-            pot_vals_tail->next->left_val = left_pot;
-            pot_vals_tail->next->right_val = right_pot;
-            /* Move the tail */
-            pot_vals_tail = pot_vals_tail->next;
+            pot_vals[pot_num_values].left_val = left_pot;
+            pot_vals[pot_num_values].right_val = right_pot;
             pot_num_values++;
         }
     }
@@ -120,10 +113,6 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
    public:
     /* Our serial processing is abstracted away here */
     EtchaSketchSerialReciever serial_reciever;
-
-    /* We loop all the pot vals and just play them in sequence */
-    int current_pot_idx_node = 1;
-    EtchaSketchSerialReciever::EtchaSketchPotValNode* current_pot_node = serial_reciever.pot_vals_head;
 
     /* Based on all the samples we have buffered to the DAC, what time are we currently at */
     accurate_float current_buffered_trace_time = 0;
@@ -166,13 +155,13 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                     notes_pressed += 1.0;
                 }
             }
-            int desired_trace_position = (total_trace_positions_sum / notes_pressed) * accurate_float(self->serial_reciever.pot_num_values);
-            desired_trace_position = std::max(desired_trace_position, 1);
-            desired_trace_position = std::min(desired_trace_position, self->serial_reciever.pot_num_values.load());
+            int desired_trace_position = ((total_trace_positions_sum / notes_pressed) * accurate_float(self->serial_reciever.pot_num_values)) - 1;
+            desired_trace_position = std::max(desired_trace_position, 0);
+            desired_trace_position = std::min(desired_trace_position, self->serial_reciever.pot_num_values.load() - 1);
 
             /* Retrieve the pot val that we are currently on */
-            accurate_float left_pot_val = self->current_pot_node->left_val;
-            accurate_float right_pot_val = self->current_pot_node->right_val;
+            accurate_float left_pot_val = self->serial_reciever.pot_vals[desired_trace_position].left_val;
+            accurate_float right_pot_val = self->serial_reciever.pot_vals[desired_trace_position].right_val;
 
             /* Convert the pot val into a our sound range [-1, 1]
              * Let's assume the pot range output is linear in [0, 1023]
@@ -184,16 +173,6 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
             /* Actually fill the sound buffer */
             output[i * 2] = left_pot_sound;
             output[i * 2 + 1] = right_pot_sound;
-
-            /* Move the position based on the desired position */
-            if (desired_trace_position > self->current_pot_idx_node) {
-                self->current_pot_node = self->current_pot_node->next;
-                self->current_pot_idx_node++;
-
-            } else if (desired_trace_position < self->current_pot_idx_node) {
-                self->current_pot_node = self->current_pot_node->prev;
-                self->current_pot_idx_node--;
-            }
 
             /* Increment the amount of buffer time that we have traced */
             self->current_buffered_trace_time += (accurate_float(1) / accurate_float(audio::sample_rate));
