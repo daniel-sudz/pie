@@ -26,6 +26,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
     struct EtchaSketchPotValNode {
         accurate_float left_val = 0;
         accurate_float right_val = 0;
+        EtchaSketchPotValNode* prev = nullptr;
         EtchaSketchPotValNode* next = nullptr;
     };
 
@@ -104,6 +105,7 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
         /* Set the next value */
         else {
             pot_vals_tail->next = new EtchaSketchPotValNode;
+            pot_vals_tail->next->prev = pot_vals_tail;
             pot_vals_tail->next->left_val = left_pot;
             pot_vals_tail->next->right_val = right_pot;
             /* Move the tail */
@@ -120,11 +122,8 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
     EtchaSketchSerialReciever serial_reciever;
 
     /* We loop all the pot vals and just play them in sequence */
-    int current_pot_idx_node = 0;
+    int current_pot_idx_node = 1;
     EtchaSketchSerialReciever::EtchaSketchPotValNode* current_pot_node = serial_reciever.pot_vals_head;
-
-    /* Based on current_pot_idx_node, how much time have we currently traced */
-    accurate_float current_trace_time = 0;
 
     /* Based on all the samples we have buffered to the DAC, what time are we currently at */
     accurate_float current_buffered_trace_time = 0;
@@ -133,7 +132,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
         /* Get a handle to ourselves */
         EtchaSketchPlayer* self = (EtchaSketchPlayer*)userData;
 
-        self->serial_reciever.timestamp_contribution_logger.log_if_needed([self]() { return "timestamps current_trace_time " + std::to_string(self->current_trace_time) + " timestamp buffer_trace_time " + std::to_string(self->current_buffered_trace_time); });
+        self->serial_reciever.timestamp_contribution_logger.log_if_needed([self]() { return " timestamp buffer_trace_time " + std::to_string(self->current_buffered_trace_time); });
 
         /* Guard on the case when we have zero pot value readings as there is nothing to play */
         if (self->serial_reciever.pot_num_values == 0) {
@@ -151,28 +150,25 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
 
         /* Fill the buffer */
         for (int i = 0; i < frameCount; i++) {
-            /* Scan the trace buffer until we are at the correct play time */
-            while (self->current_trace_time < self->current_buffered_trace_time) {
-                /* Move the trace buffer by one */
-                self->current_pot_idx_node++;
-                self->current_pot_node = self->current_pot_node->next;
+            /* Calculate the desired position on the Etch-A-Sketch based on the note contributions */
+            accurate_float notes_pressed = 0.0;
+            accurate_float total_trace_positions_sum = 0.0;
 
-                /* Loop if we reach the end of the trace buffer */
-                if (self->current_pot_node == nullptr) {
-                    self->current_pot_idx_node = 0;
-                    self->current_pot_node = self->serial_reciever.pot_vals_head;
-                }
+            for (uint32_t note = 0; note < 30; note++) {
+                uint32_t note_field = (uint32_t(1) << note);
+                if (self->serial_reciever.trace_freqs & note_field) {
+                    /* Note is being pressed, calculate contribution */
+                    accurate_float note_freq = accurate_float(self->serial_reciever.keyboardnotes_lookup_table[note]);
+                    accurate_float note_total_traces = note_freq * self->current_buffered_trace_time;
+                    accurate_float note_current_trace_pos = note_total_traces - std::floorf(note_total_traces);
 
-                /* Increment the trace times */
-                for (uint32_t note = 0; note < 30; note++) {
-                    uint32_t note_field = (uint32_t(1) << note);
-                    if (self->serial_reciever.trace_freqs & note_field) {
-                        accurate_float note_freq = accurate_float(self->serial_reciever.keyboardnotes_lookup_table[note]);
-                        accurate_float trace_contribution = (accurate_float(1) / (accurate_float(self->serial_reciever.pot_num_values) * note_freq));
-                        self->current_trace_time += trace_contribution;
-                    }
+                    total_trace_positions_sum += note_current_trace_pos;
+                    notes_pressed += 1.0;
                 }
             }
+            int desired_trace_position = (total_trace_positions_sum / notes_pressed) * accurate_float(self->serial_reciever.pot_num_values);
+            desired_trace_position = std::max(desired_trace_position, 1);
+            desired_trace_position = std::min(desired_trace_position, self->serial_reciever.pot_num_values.load());
 
             /* Retrieve the pot val that we are currently on */
             accurate_float left_pot_val = self->current_pot_node->left_val;
@@ -189,15 +185,21 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
             output[i * 2] = left_pot_sound;
             output[i * 2 + 1] = right_pot_sound;
 
-            /* Increment the amount of buffer time that we have traced */
-            self->current_buffered_trace_time += (accurate_float(1) / accurate_float(audio::sample_rate));
+            /* Move the position based on the desired position */
+            if (desired_trace_position > self->current_pot_idx_node) {
+                self->current_pot_node = self->current_pot_node->next;
+                self->current_pot_idx_node++;
+
+            } else if (desired_trace_position < self->current_pot_idx_node) {
+                self->current_pot_node = self->current_pot_node->prev;
+                self->current_pot_idx_node--;
+            }
         }
         /* All is good */
         return 0;
     }
 
-    void*
-    get_concrete_handle() {
+    void* get_concrete_handle() {
         return this;
     }
 };
