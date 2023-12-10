@@ -141,7 +141,10 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
         for (int i = 0; i < frameCount; i++) {
             /* Calculate the desired position on the Etch-A-Sketch based on the note contributions */
             accurate_float notes_pressed = 0.0;
-            accurate_float total_trace_positions_sum = 0.0;
+
+            /* Actual sounds that we will output */
+            accurate_float left_pot_val = 0.0;
+            accurate_float right_pot_val = 0.0;
 
             for (uint32_t note = 0; note < 30; note++) {
                 uint32_t note_field = (uint32_t(1) << note);
@@ -156,17 +159,21 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                         note_current_trace_pos = (1 - note_current_trace_pos);
                     }
 
-                    total_trace_positions_sum += note_current_trace_pos;
+                    int desired_trace_position = (note_current_trace_pos * accurate_float(self->serial_reciever.pot_num_values)) - 1;
+                    desired_trace_position = std::max(desired_trace_position, 0);
+                    desired_trace_position = std::min(desired_trace_position, self->serial_reciever.pot_num_values.load() - 1);
+
+                    /* Retrieve the pot val that we are currently on */
+                    left_pot_val += self->serial_reciever.pot_vals[desired_trace_position].left_val;
+                    right_pot_val += self->serial_reciever.pot_vals[desired_trace_position].right_val;
+
                     notes_pressed += 1.0;
                 }
             }
-            int desired_trace_position = ((total_trace_positions_sum / notes_pressed) * accurate_float(self->serial_reciever.pot_num_values)) - 1;
-            desired_trace_position = std::max(desired_trace_position, 0);
-            desired_trace_position = std::min(desired_trace_position, self->serial_reciever.pot_num_values.load() - 1);
 
-            /* Retrieve the pot val that we are currently on */
-            accurate_float left_pot_val = self->serial_reciever.pot_vals[desired_trace_position].left_val;
-            accurate_float right_pot_val = self->serial_reciever.pot_vals[desired_trace_position].right_val;
+            /* Normalize by the number of notes*/
+            left_pot_val /= notes_pressed;
+            right_pot_val /= notes_pressed;
 
             /* Convert the pot val into a our sound range [-1, 1]
              * Let's assume the pot range output is linear in [0, 1023]
