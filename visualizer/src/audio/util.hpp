@@ -67,7 +67,7 @@ namespace audio {
                 .device = the_schiit_box,
                 .channelCount = 2,
                 .sampleFormat = paFloat32,
-                .suggestedLatency = PaTime(5.0),
+                .suggestedLatency = PaTime((1e-3) * 15),
                 .hostApiSpecificStreamInfo = nullptr};
 
             /* Check for sample rate compatibility*/
@@ -89,7 +89,7 @@ namespace audio {
                      *  request from the callback. Many apps may want to use paFramesPerBufferUnspecified, which
                      *  tells PortAudio to pick the best, possibly changing, buffer size.
                      */
-                    paFramesPerBufferUnspecified,
+                    (audio::sample_rate / (1 << 8)),
 
                     /* Stream flag settings*/
                     paNoFlag,
