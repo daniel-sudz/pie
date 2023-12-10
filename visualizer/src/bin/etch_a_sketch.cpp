@@ -151,6 +151,11 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                     accurate_float note_total_traces = note_freq * self->current_buffered_trace_time;
                     accurate_float note_current_trace_pos = note_total_traces - std::floorf(note_total_traces);
 
+                    /* Triangle instead of saw-tooth */
+                    if (((long long)note_total_traces) % 2 == 1) {
+                        note_current_trace_pos = (1 - note_current_trace_pos);
+                    }
+
                     total_trace_positions_sum += note_current_trace_pos;
                     notes_pressed += 1.0;
                 }
