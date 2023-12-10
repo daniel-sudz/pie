@@ -33,15 +33,7 @@ unsigned long erase_released = 0;
 unsigned long sus_pressed = 0;
 unsigned long sus_released = 0;
 
-// frequencies for notes on our keyboard
-const char* notes[mux_num_input][mux_num_output] = {
-    {"130.81", "155.56", "185.00", "220.00"},
-    {"138.59", "164.81", "196.00", "233.08"},
-    {"146.83", "174.61", "207.65", "246.94"},
-    {"261.63", "311.13", "369.99", "440.00"},
-    {"277.18", "329.63", "392.00", "466.16"},
-    {"293.66", "349.23", "415.30", "493.88"},
-};
+bool sus_nc;
 
 /* Marks a note as being pressed using a bitfield approach */
 void set_note_field(uint32_t& note, uint32_t mux_input, uint32_t mux_output) {
@@ -70,6 +62,9 @@ void setup() {
     // configure start/stop pins
     pinMode(erasePin, INPUT_PULLUP);
     pinMode(susPin, INPUT_PULLUP);
+
+    // figure out if pedal is normally closed (nc)
+    sus_nc = !digitalRead(susPin);
 }
 
 void loop() {
@@ -93,7 +88,7 @@ void loop() {
         }
     }
 
-    if (sus_up == 1) {
+    if (sus_up == sus_nc) {
         if (sus_pressed == 0) {
             if (millis() - sus_released > repress_delay) {
                 sus_pressed = millis();
@@ -111,7 +106,7 @@ void loop() {
     Serial.println(pot1_val);
 
     /* ------------------------------------ Etch-a-Sketch ------------------------------ */
-    /* ------------------------------------  MUX ------------------------------------  */
+    /* ------------------------------------ MUX ------------------------------------ */
     // read the mux
     uint32_t notes_pressed = 0;
     for (int mux_output = 0; mux_output < mux_num_output; mux_output++) {
