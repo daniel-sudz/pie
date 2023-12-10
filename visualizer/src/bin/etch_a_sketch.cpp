@@ -147,7 +147,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                 uint32_t note_field = (uint32_t(1) << note);
                 if (self->serial_reciever.trace_freqs & note_field) {
                     /* Note is being pressed, calculate contribution */
-                    accurate_float note_freq = accurate_float(self->serial_reciever.keyboardnotes_lookup_table[note]);
+                    accurate_float note_freq = (accurate_float(self->serial_reciever.keyboardnotes_lookup_table[note])) * (accurate_float(2));
                     accurate_float note_total_traces = note_freq * self->current_buffered_trace_time;
                     accurate_float note_current_trace_pos = note_total_traces - std::floorf(note_total_traces);
 
