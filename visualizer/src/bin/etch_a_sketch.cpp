@@ -194,6 +194,9 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                 self->current_pot_node = self->current_pot_node->prev;
                 self->current_pot_idx_node--;
             }
+
+            /* Increment the amount of buffer time that we have traced */
+            self->current_buffered_trace_time += (accurate_float(1) / accurate_float(audio::sample_rate));
         }
         /* All is good */
         return 0;
