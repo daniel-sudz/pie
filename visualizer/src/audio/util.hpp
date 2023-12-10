@@ -54,13 +54,13 @@ namespace audio {
         for (int i = 0; i < num_devices; i++) {
             const PaDeviceInfo* device_info = Pa_GetDeviceInfo(i);
             std::string device_name = device_info->name;
-            if (device_name.find("Schiit Modi 3") != std::string::npos) {
+            if (device_name.find("Oscilloscope") != std::string::npos) {
                 the_schiit_box = i;
             }
         }
 
         if (the_schiit_box != -1) {
-            audio::debug_info("[INFO: AUDIO]: FOUND THE SCHIIT BOX");
+            audio::debug_info("[INFO: AUDIO]: Found the Audio Output Oscilloscope");
 
             /* SCHIIT BOX settings */
             const PaStreamParameters output_parameters = {
