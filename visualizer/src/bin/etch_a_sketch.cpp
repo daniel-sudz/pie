@@ -1,3 +1,4 @@
+#include <math.h>
 #include <unistd.h>
 
 #include <algorithm>
@@ -149,7 +150,7 @@ struct EtchaSketchPlayer : public audio::Player<EtchaSketchPlayer> {
                     /* Note is being pressed, calculate contribution */
                     accurate_float note_freq = (accurate_float(self->serial_reciever.keyboardnotes_lookup_table[note])) * (accurate_float(2));
                     accurate_float note_total_traces = note_freq * self->current_buffered_trace_time;
-                    accurate_float note_current_trace_pos = note_total_traces - std::floorf(note_total_traces);
+                    accurate_float note_current_trace_pos = note_total_traces - ::floorf(note_total_traces);
 
                     /* Triangle instead of saw-tooth */
                     if (((long long)note_total_traces) % 2 == 1) {
