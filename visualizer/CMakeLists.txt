@@ -7,7 +7,7 @@ set(CMAKE_CXX_COMPILER g++)
 if(APPLE)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-stack_size -Wl,0x20000000")
 elseif(UNIX)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --Wl,-z,stack-size=536870912")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=536870912")
 endif()
 
 project(Visualizer LANGUAGES CXX)
