@@ -20,8 +20,8 @@ elseif(UNIX)
 endif()
 
 # enable debug mode
-add_compile_options(-fsanitize=address -g)
-add_link_options(-fsanitize=address -g)
+add_compile_options(-O3)
+add_link_options(-O3)
 
 
 add_subdirectory(thirdparty/portaudio)
