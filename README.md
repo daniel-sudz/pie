@@ -1,4 +1,4 @@
-# Osciliscope Music PIE Team 
+# [![Build](https://github.com/daniel-sudz/pie/actions/workflows/build.yaml/badge.svg)](https://github.com/daniel-sudz/pie/actions/workflows/build.yaml) Osciliscope Music PIE Team 
 This contains code for our final PIE project (osciliscope music) at Olin College of Engineering. 
 
 # Arduino
