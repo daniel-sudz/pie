@@ -1,0 +1,697 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Software Design</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+    margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-uiBlue { background-color: rgba(35, 131, 226, .07); }
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-translucentGray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+.select-value-color-pageGlass { background-color: undefined; }
+.select-value-color-washGlass { background-color: undefined; }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="8f092403-daef-4f4f-9b83-9239c101b073" class="page sans"><header><h1 class="page-title">Software Design</h1><p class="page-description"></p></header><div class="page-body">
+
+<div data-block-id="112b67e0-15cf-4518-8853-ad432e2755b0" class="notion-selectable notion-external_object_instance-block" style="width: 100%; max-width: 1718px; align-self: center; margin-top: 4px; margin-bottom: 4px;"><div contenteditable="false" data-content-editable-void="true"><a href="https://github.com/daniel-sudz/pie" target="_blank" rel="noopener noreferrer" style="display: flex; color: inherit; text-decoration: none; -webkit-user-select: none; transition: background 20ms ease-in; cursor: pointer; flex-grow: 1; min-width: 0px; align-items: center; border: 1px solid rgb(233, 233, 231); border-radius: 4px; padding: 8px 12px; fill: inherit; background: rgba(55, 53, 47, 0.08);"><div style="display: flex; align-self: start; height: 32px; width: 32px; margin: 3px 12px 3px 4px; position: relative;"><div><div style="width: 100%; height: 100%;"><img src="https://basalt-oyster-011.notion.site/images/external_integrations/github-icon.png" referrerpolicy="same-origin" style="display: block; object-fit: cover; border-radius: 4px; width: 33.744px; height: 33.744px; transition: opacity 100ms ease-out;"></div></div></div><div style="display: flex; flex-direction: column; justify-content: center; flex-grow: 1; flex-shrink: 1; overflow: hidden;"><div style="display: flex; align-items: baseline; font-size: 14px;"><div spellcheck="false" style="white-space: nowrap; color: rgb(55, 53, 47); font-weight: 500; overflow: hidden; text-overflow: ellipsis;">pie</div></div><div style="display: flex; align-items: center; color: rgba(55, 53, 47, 0.65); font-size: 12px;"><div spellcheck="false" style="white-space: nowrap; color: rgba(55, 53, 47, 0.65);">daniel-sudz</div></div></div><div role="button" tabindex="0" style="-webkit-user-select: none; transition: background 20ms ease-in; cursor: pointer; opacity: 0; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 4px; flex-shrink: 0; margin-right: 4px; color: rgba(55, 53, 47, 0.65);"><svg role="graphics-symbol" viewBox="0 0 13 3" class="dots" style="width: 14px; height: 100%; display: block; fill: inherit; flex-shrink: 0; color: rgba(55, 53, 47, 0.45);"><g><path d="M3,1.5A1.5,1.5,0,1,1,1.5,0,1.5,1.5,0,0,1,3,1.5Z"></path><path d="M8,1.5A1.5,1.5,0,1,1,6.5,0,1.5,1.5,0,0,1,8,1.5Z"></path><path d="M13,1.5A1.5,1.5,0,1,1,11.5,0,1.5,1.5,0,0,1,13,1.5Z"></path></g></svg></div></a></div></div>
+
+
+<p id="19063aae-58bf-4e33-ae53-60cc5c4ffeb9" class="">Our synthesizer program is a standalone C++17 binary that runs on a laptop. In our repo we refer to this program as the “visualizer” project. The visualizer is responsible for consuming the keyboard and Etch-a-Sketch events from the Arduino Uno serial and using them to drive the appropriate sound output which renders the Etch-a-Sketch drawing on the oscilloscope. </p><p id="87102bde-a0db-4937-b480-12e070daf805" class="">This page describes the current version of the software, which supports polyphony (the ability to play multiple notes at once). Since this version differs significantly from the original version, we have documented the original here:</p><figure id="124bf65d-d81c-42a6-850f-bb394151ee92" class="link-to-page"><a href="Software%20Design%208f092403daef4f4f9b839239c101b073/Software%20Design%20V1%20124bf65dd81c42a6850fbb394151ee92.html"><img class="icon" src="https://www.notion.so/icons/code_gray.svg"/>Software Design V1</a></figure><h2 id="c7e25e49-7c82-40e3-8800-943eaacfaa12" class="">Visualizer Program Dependencies</h2><table id="f792bcca-24d7-4f02-bf84-8ca5f9a250e4" class="simple-table"><tbody><tr id="bdccb7fe-5f6e-46f8-a8f7-71c5a1e585fb"><td id="w@n[" class="">Name</td><td id="zD\R" class="">Version</td><td id="iUah" class="" style="width:181.47500610351562px">Purpose</td><td id="=oOp" class="" style="width:245.8000030517578px">Link</td></tr><tr id="b885b79e-74cc-4397-8a16-226e080716a9"><td id="w@n[" class="">cmake/make</td><td id="zD\R" class="">cmake ≥3.9</td><td id="iUah" class="" style="width:181.47500610351562px">compiler toolchain</td><td id="=oOp" class="" style="width:245.8000030517578px"><a href="https://cmake.org/">https://cmake.org/</a></td></tr><tr id="32e6fc23-d442-4ff9-948e-799aaeed00e1"><td id="w@n[" class="">g++</td><td id="zD\R" class="">any supporting std=gnu++17</td><td id="iUah" class="" style="width:181.47500610351562px">compiler toolchain</td><td id="=oOp" class="" style="width:245.8000030517578px"><a href="https://gcc.gnu.org/">https://gcc.gnu.org/</a></td></tr><tr id="c31201ac-2759-46fe-9c67-29b66f695bc5"><td id="w@n[" class="">portaudio</td><td id="zD\R" class="">≥ v19.7.0</td><td id="iUah" class="" style="width:181.47500610351562px">audio driver </td><td id="=oOp" class="" style="width:245.8000030517578px"><a href="https://github.com/PortAudio/portaudio">https://github.com/PortAudio/portaudio</a></td></tr><tr id="b97c4c26-e5f2-4d6c-a9c3-16632df9957c"><td id="w@n[" class="">libserial</td><td id="zD\R" class="">≥ v1.0.0</td><td id="iUah" class="" style="width:181.47500610351562px">serial processing</td><td id="=oOp" class="" style="width:245.8000030517578px"><a href="https://github.com/crayzeewulf/libserial">https://github.com/crayzeewulf/libserial</a></td></tr></tbody></table><p id="34717c57-c337-4e9f-a7ff-f249ed259f17" class="">The visualizer program can be built from the following project folder: <a href="https://github.com/daniel-sudz/pie/blob/main/visualizer/src/bin/etch_a_sketch.cpp">https://github.com/daniel-sudz/pie/blob/main/visualizer/src/bin/etch_a_sketch.cpp</a>.</p><h2 id="e645e76f-488a-4aba-8eb5-bec5f762fdee" class="">Visualizer Architecture: Data Structure</h2><figure id="8fcadbc6-5a8c-4d9e-baa8-6c3b32e8a32c" class="image"><a href="Software%20Design%208f092403daef4f4f9b839239c101b073/Screenshot_2023-12-11_at_3.45.22_PM.png"><img style="width:480px" src="Software%20Design%208f092403daef4f4f9b839239c101b073/Screenshot_2023-12-11_at_3.45.22_PM.png"/></a></figure><p id="f3ae72b1-be1f-42cc-bc48-4602f800c4f6" class="">The portaudio library allows the user to output audio in a cross-platform and performant way using a callback design pattern. When the operating system requests more audio to play, the callback will be triggered, and the user is required to fill an audio buffer with sound that is about to be played. </p><p id="9cfe9190-f777-4ce6-b01d-2b064844d60b" class="">Because of the way audio is implemented in most operating systems, the portaudio callback is handled on a separate thread compared to the main program thread. This raises the typical concerns of shared memory access that multithreaded programs bring. This issue is exacerbated by the fact that portaudio recommends not using multithreaded primitives such as locks or other unbounded system calls such as memory allocation due to concerns about performance and undefined behaviour (<a href="https://www.portaudio.com/docs/v19-doxydocs/writing_a_callback.html">https://www.portaudio.com/docs/v19-doxydocs/writing_a_callback.html</a>). </p><p id="c7133e7c-c0f5-4a6a-b890-c9717f69fcc6" class="">Through extensive testing and tuning, we have found that the software design in V1 to be unsuitable for polyphony support (playing multiple notes at once). In our previous design, we stored Etch-A-Sketch potentiometer values in a linked-list which worked great for playing one note. However, to play multiple notes, we need to support direct indexing into the potentiometer values because seeking forward or backwards on the linked-list posed a significant degradation in performance. </p><p id="a54d7524-d9d6-499b-99f2-cc90f55f71a9" class="">Given that we already have logic to not record potentiometer values when they are not being used by the user, we calculated that it would be possible (on a computer with a decent amount of RAM) to pre-allocate a 256MB continuous block of memory that would be sufficient for any reasonable user of the Etch-A-Sketch. </p><p id="156a9086-6325-4972-b967-d225866cdb5e" class="">Note that on most C++ compilers, the default stack size is very small. To support such a large allocation of memory, we modified our g++ link flags to inject the following flag for the ld program (<a href="https://linux.die.net/man/1/ld">https://linux.die.net/man/1/ld</a>). </p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="0a333188-8724-4dd0-acb0-32a8272065e1" class="code"><code class="language-C++">set(CMAKE_EXE_LINKER_FLAGS &quot;${CMAKE_EXE_LINKER_FLAGS} -Wl,-stack_size -Wl,0x20000000&quot;</code></pre><p id="d1ec1dd7-8f25-4fe1-9535-9cc5a7935a1a" class="">This Cmake directive sets the stack_size parameter of ld to 0x20000000 which corresponds to 512MB. </p><h2 id="8d3baa4e-b02c-451e-bfa2-948306633df8" class="">Polyphony Calculations</h2><p id="4539de21-167b-4009-a197-866825108c81" class="">We output audio to a DAC (in our case SCHIIT box 3) that supports a given frequency (in our case 192kHz). Let’s denote this frequency <style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><span data-token-index="0" contenteditable="false" class="notion-text-equation-token" style="user-select:all;-webkit-user-select:all;-moz-user-select:all"><span></span><span><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mi>r</mi><mi>e</mi><msub><mi>q</mi><mrow><mi>D</mi><mi>A</mi><mi>C</mi></mrow></msub></mrow><annotation encoding="application/x-tex">freq_{DAC}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">re</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">D</span><span class="mord mathnormal mtight">A</span><span class="mord mathnormal mtight" style="margin-right:0.07153em;">C</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span><span>﻿</span></span>. In our code, we keep track of the current global time using current_buffered_trace_time. This variable represent the time, in seconds, assuming all currently buffered audio samples to the DAC have finished playing. </p><p id="e092b239-6548-44c2-832d-4ecc5f0ada2c" class="">When the system requests audio through the streamCallback function we calculate the following for each key being pressed on the keyboard: </p><figure id="9c578bdf-e95e-4a66-b718-2aab971cd9db" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi>s</mi><mo>=</mo><mi>f</mi><mi>r</mi><mi>e</mi><msub><mi>q</mi><mrow><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi></mrow></msub><mo>∗</mo><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi mathvariant="normal">_</mi><mi>b</mi><mi>u</mi><mi>f</mi><mi>f</mi><mi>e</mi><mi>r</mi><mi>e</mi><mi>d</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>i</mi><mi>m</mi><mi>e</mi></mrow><annotation encoding="application/x-tex">note\_traces = freq_{note} * current\_buffered\_trace\_time</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9251em;vertical-align:-0.31em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ces</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">re</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">t</span><span class="mord mathnormal mtight">e</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">u</span><span class="mord mathnormal">rre</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">b</span><span class="mord mathnormal">u</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">ere</span><span class="mord mathnormal">d</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ce</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal">im</span><span class="mord mathnormal">e</span></span></span></span></span></div></figure><p id="a7ab7f03-117e-4c47-9809-084f36c46d51" class="">We calculate note_traces to be the number of times this note has “traced” the entire Etch-A-Sketch picture.</p><figure id="894b2076-a0a5-46dc-b7c6-8221a490eb86" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>p</mi><mi>o</mi><mi>s</mi><mo>=</mo><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi>s</mi><mo>−</mo><mo stretchy="false">⌊</mo><mrow><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi>s</mi></mrow><mo stretchy="false">⌋</mo></mrow><annotation encoding="application/x-tex">note\_current\_trace\_pos = note\_traces - \lfloor{note\_traces}\rfloor</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9251em;vertical-align:-0.31em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">c</span><span class="mord mathnormal">u</span><span class="mord mathnormal">rre</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ce</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">p</span><span class="mord mathnormal">os</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.9251em;vertical-align:-0.31em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ces</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mopen">⌊</span><span class="mord"><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ces</span></span><span class="mclose">⌋</span></span></span></span></span></div></figure><p id="5faf7ecb-08c2-4cf0-b33a-1a047c9116d8" class="">We calculate the current position (in range from 0-1) that the note represents in the Etch-A-Sketch picture by looking at the fractional part.</p><figure id="a557dcbe-b4e5-4cd2-addc-7e35b5561616" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>i</mi><mi>a</mi><mi>n</mi><mi>g</mi><mi>l</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>p</mi><mi>o</mi><mi>s</mi><mo>=</mo><mrow><mo fence="true">{</mo><mtable rowspacing="0.36em" columnalign="left left" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>p</mi><mi>o</mi><mi>s</mi></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><mtext>if </mtext><mo stretchy="false">⌊</mo><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi>s</mi><mo stretchy="false">⌋</mo><mtext> is even</mtext></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><mn>1</mn><mo>−</mo><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>p</mi><mi>o</mi><mi>s</mi></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mtext>otherwise</mtext></mstyle></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">
+    note\_triangle\_pos =
+    \begin{cases}
+      note\_current\_trace\_pos &amp; \text{if}\ \lfloor note\_traces \rfloor \text{ is even} \\
+      1 - note\_current\_trace\_pos &amp; \text{otherwise}
+    \end{cases}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">ian</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">p</span><span class="mord mathnormal">os</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:3em;vertical-align:-1.25em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size4">{</span></span><span class="mord"><span class="mtable"><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.69em;"><span style="top:-3.69em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">c</span><span class="mord mathnormal">u</span><span class="mord mathnormal">rre</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ce</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">p</span><span class="mord mathnormal">os</span></span></span><span style="top:-2.25em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">c</span><span class="mord mathnormal">u</span><span class="mord mathnormal">rre</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ce</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">p</span><span class="mord mathnormal">os</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.19em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:1em;"></span><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.69em;"><span style="top:-3.69em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord text"><span class="mord">if</span></span><span class="mspace"> </span><span class="mopen">⌊</span><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ces</span><span class="mclose">⌋</span><span class="mord text"><span class="mord"> is even</span></span></span></span><span style="top:-2.25em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord text"><span class="mord">otherwise</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.19em;"><span></span></span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div></figure><p id="7984ed78-11c4-4479-b20c-f6ceebcb731c" class="">We convert from a saw-tooth wave-form to a triangle-wave form pattern to make the audio sounds more pleasant. Note in this case, you also need to pre-adjust the frequency by a factor of 2 to keep the pitch at the same frequency. </p><p id="e4afd6c4-c8a7-422f-8128-4aad25873b6f" class="">For polyphony support, we average all the individual note positions together. Then we calculate the the index of the potentiometer values to retrieve using: </p><figure id="80bff513-65ce-47c6-9b25-efc895fd82ee" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>p</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi>i</mi><mi>o</mi><mi>m</mi><mi>e</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi>n</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>i</mi><mi>n</mi><mi>d</mi><mi>e</mi><mi>x</mi><mo>=</mo><mi>a</mi><mi>v</mi><mi>e</mi><mi>r</mi><mi>a</mi><mi>g</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>i</mi><mi>a</mi><mi>n</mi><mi>g</mi><mi>l</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>p</mi><mi>o</mi><mi>s</mi><mi>i</mi><mi>t</mi><mi>i</mi><mi>o</mi><mi>n</mi><mi>s</mi><mo>∗</mo><mi>t</mi><mi>o</mi><mi>t</mi><mi>a</mi><mi>l</mi><mi mathvariant="normal">_</mi><mi>p</mi><mi>o</mi><mi>t</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi>i</mi><mi>o</mi><mi>m</mi><mi>e</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi mathvariant="normal">_</mi><mi>v</mi><mi>a</mi><mi>l</mi><mi>u</mi><mi>e</mi><mi>s</mi></mrow><annotation encoding="application/x-tex">potentiometer\_note\_index = average\_triangle\_positions * total\_potentiometer\_values</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord mathnormal">p</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">i</span><span class="mord mathnormal">o</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">n</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">in</span><span class="mord mathnormal">d</span><span class="mord mathnormal">e</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">ian</span><span class="mord mathnormal" style="margin-right:0.03588em;">g</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">e</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">p</span><span class="mord mathnormal">os</span><span class="mord mathnormal">i</span><span class="mord mathnormal">t</span><span class="mord mathnormal">i</span><span class="mord mathnormal">o</span><span class="mord mathnormal">n</span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord mathnormal">t</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">p</span><span class="mord mathnormal">o</span><span class="mord mathnormal">t</span><span class="mord mathnormal">e</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord mathnormal">i</span><span class="mord mathnormal">o</span><span class="mord mathnormal">m</span><span class="mord mathnormal">e</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">er</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord mathnormal">a</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal">u</span><span class="mord mathnormal">es</span></span></span></span></span></div></figure><p id="56cfc84e-4afe-421b-8cf2-ce87395acffa" class="">Finally, we we retrieve the desired potentiometer values, normalize them it by the scale of the potentiometer, and output a left and right channel sound. </p><p id="6e40f50f-f257-4663-ae2b-4076e4044f0a" class="">Note that after rendering every DAC sound sample, we also need to update current_buffered_trace_time with the elapsed time.</p><figure id="f7de4e08-a752-46e0-8d2b-110eb9bd3001" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi mathvariant="normal">_</mi><mi>b</mi><mi>u</mi><mi>f</mi><mi>f</mi><mi>e</mi><mi>r</mi><mi>e</mi><mi>d</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>i</mi><mi>m</mi><mi>e</mi><mo>:</mo><mo>=</mo><mi>c</mi><mi>u</mi><mi>r</mi><mi>r</mi><mi>e</mi><mi>n</mi><mi>t</mi><mi mathvariant="normal">_</mi><mi>b</mi><mi>u</mi><mi>f</mi><mi>f</mi><mi>e</mi><mi>r</mi><mi>e</mi><mi>d</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi><mi mathvariant="normal">_</mi><mi>t</mi><mi>i</mi><mi>m</mi><mi>e</mi><mo>+</mo><mfrac><mn>1</mn><mrow><mi>f</mi><mi>r</mi><mi>e</mi><msub><mi>q</mi><mrow><mi>D</mi><mi>A</mi><mi>C</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">current\_buffered\_trace\_time := current\_buffered\_trace\_time + \frac{1}{freq_{DAC}} </annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">u</span><span class="mord mathnormal">rre</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">b</span><span class="mord mathnormal">u</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">ere</span><span class="mord mathnormal">d</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ce</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal">im</span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.0044em;vertical-align:-0.31em;"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">u</span><span class="mord mathnormal">rre</span><span class="mord mathnormal">n</span><span class="mord mathnormal">t</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">b</span><span class="mord mathnormal">u</span><span class="mord mathnormal" style="margin-right:0.10764em;">ff</span><span class="mord mathnormal">ere</span><span class="mord mathnormal">d</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal" style="margin-right:0.02778em;">r</span><span class="mord mathnormal">a</span><span class="mord mathnormal">ce</span><span class="mord" style="margin-right:0.02778em;">_</span><span class="mord mathnormal">t</span><span class="mord mathnormal">im</span><span class="mord mathnormal">e</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:2.2019em;vertical-align:-0.8804em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mord mathnormal">re</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.03588em;">q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.0359em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.02778em;">D</span><span class="mord mathnormal mtight">A</span><span class="mord mathnormal mtight" style="margin-right:0.07153em;">C</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8804em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div></figure><h2 id="35f79aa6-a8d8-468d-8010-ea7d36965e8a" class="">MacOS Audio Setup</h2><p id="0fe443cc-c9d3-4eac-89a1-e94a7b6d983d" class="">To support both the Etch-A-Sketch rendering and the audio output at the same time, you should setup a combined audio device that will split the generated audio output between an external DAC (driving the physical oscilloscope) and a speaker.</p><p id="c4f997e4-acb9-4772-8fff-029d459aee34" class="">The only requirement is that the physical DAC should support a two-channel output of 192kHz. Below are instructions on how to configure a combined audio device on Macos. See the official article <a href="https://support.apple.com/guide/audio-midi-setup/play-audio-through-multiple-devices-at-once-ams7c093f372/mac">https://support.apple.com/guide/audio-midi-setup/play-audio-through-multiple-devices-at-once-ams7c093f372/mac</a> for more details.</p><figure id="e8984564-f932-447d-9e28-6399f593f9a4" class="image"><a href="Software%20Design%208f092403daef4f4f9b839239c101b073/Untitled.png"><img style="width:480px" src="Software%20Design%208f092403daef4f4f9b839239c101b073/Untitled.png"/></a></figure><p id="11733221-5bb6-40a9-aa16-0a24114b6716" class="">In the &quot;Audio MIDI Setting&quot; create a &quot;Multi-Output Device&quot; called &quot;Oscilloscope&quot; that combines your external DAC driving the physical osciliscope with you desired speaker&#x27;s output. We have found that the built in speakers on the latest Macbook&#x27;s sound quite pleasant and are more than good enough.</p><p id="bd464dc4-c136-4866-8e8d-0b3e50e80b97" class="">
+</p><figure id="b8d75459-1238-4177-8471-5a7267fbc64a" class="image"><a href="Software%20Design%208f092403daef4f4f9b839239c101b073/Untitled%201.png"><img style="width:480px" src="Software%20Design%208f092403daef4f4f9b839239c101b073/Untitled%201.png"/></a></figure><p id="6bb47965-4023-4556-bb9c-b9744821a2bd" class="">Select the &quot;Oscilloscope&quot; device that you created in the audio output.<strong></strong></p><h2 id="749cd960-5e30-4660-a714-5df3436260a0" class="">Building the Visualizer</h2><p id="d13b592f-1e95-4f30-baed-b3838f180291" class="">We feature build-scripts that test the Visualizer program across a wide variety of macos and ubuntu versions. If you want to compile and run the Visualizer program locally, you can take a look at the sample build scripts to install the dependencies for your platform: <a href="https://github.com/daniel-sudz/pie/blob/main/.github/workflows/build.yaml">https://github.com/daniel-sudz/pie/blob/main/.github/workflows/build.yaml</a>. </p><p id="d75a5707-6db3-4c62-a9ad-66268619de4c" class="">
+</p><figure id="b4b8129f-b7d3-44e4-946e-79e51c6118a9" class="image"><a href="Software%20Design%208f092403daef4f4f9b839239c101b073/Screenshot_2023-12-11_at_5.02.31_PM.png"><img style="width:405px" src="Software%20Design%208f092403daef4f4f9b839239c101b073/Screenshot_2023-12-11_at_5.02.31_PM.png"/></a></figure><p id="83f0f5db-daa0-43d7-8b14-cb131a61e83d" class="">Compilation targets that we current support/test against for the Visualizer program. You can check the status of the latest build in <a href="https://github.com/daniel-sudz/pie/actions/workflows/build.yaml">https://github.com/daniel-sudz/pie/actions/workflows/build.yaml</a>. </p><h2 id="701ac441-d68f-43a6-8e21-872f09e884c4" class="">Running the Visualizer</h2><p id="ba363252-eda1-4229-9da4-ec9033f9d609" class="">After compiling the program, you can bootstrap the Visualizer program by running the “etch-sketch-loop” bash script. If you see the following output, you should be good to go: </p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="3d3bd92a-6262-4e0d-a151-b94333d8f347" class="code"><code class="language-Bash">danielsudz@Daniels-MacBook-Pro-5 visualizer % sudo ./etch-sketch-loop
+[INFO]: Located arduino serial port at /dev/tty.usbmodem11401
+[INFO SERIAL]: The serial port has opened succesfully
+[INFO AUDIO]: started initializing portaudio
+[INFO AUDIO]: finished initializing portaudio
+[INFO AUDIO]: FOUND THE SCHIIT BOX
+[INFO AUDIO]: Sample rate of 192000 is supported!!!
+[INFO SERIAL]: Currently holding 1 pot value and playing freq 0 frequency</code></pre><p id="a853b73d-7678-41eb-9ef4-10c337e3b675" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
