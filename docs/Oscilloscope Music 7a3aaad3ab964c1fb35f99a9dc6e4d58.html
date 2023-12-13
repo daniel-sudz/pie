@@ -1,0 +1,678 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Oscilloscope Music</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+    margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 243, 219, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-uiBlue { background-color: rgba(35, 131, 226, .07); }
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-translucentGray { background-color: rgba(255, 255, 255, 0.0375); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(253, 236, 200, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+.select-value-color-pageGlass { background-color: undefined; }
+.select-value-color-washGlass { background-color: undefined; }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="7a3aaad3-ab96-4c1f-b35f-99a9dc6e4d58" class="page sans"><header><h1 class="page-title">Oscilloscope Music</h1><p class="page-description"></p></header><div class="page-body"><p id="55296129-f3bd-4775-b7a7-601a2266296a" class="">Olin College Principles of Integrated Engineering 2023</p><p id="b19e7539-1232-4e7d-8b6f-6ec491bef52a" class="">
+</p><figure id="1fc91191-debc-40f2-82f6-9ae73ddc92cc"><p style="text-align:center"><iframe src="https://www.youtube.com/embed/b-7yn3kUiB4?si=sk-PoWK9KLevdkqT" width="816" height="459" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></p></figure><h2 id="53b2bd3a-37c1-4ece-b64b-8467e1ae1447" class="">What’s an Oscilloscope?</h2><p id="550906c6-7faf-48ba-b457-d51d7a8f277a" class="">An oscilloscope, or an O-scope as we hear it more commonly referred to, is an instrument capable of visualizing and plotting electric signals. It allows the users to observe the behavior of voltage change over time, which helps when troubleshooting and understanding the behavior of electronic systems. Oscilloscopes are a useful tool in engineering as they are helpful for testing in various situations, from testing to debugging to maintenance of a system.</p><div id="edde98cc-98a3-46d4-8b1d-3cd018b198eb" class="column-list"><div id="ea31452b-9172-4337-9894-e53dcf8d3849" style="width:50%" class="column"><h2 id="2d1102f3-ca65-4bdf-90cb-9b5fa2092f37" class="">What is oscilloscope music?</h2><p id="340b4d4e-3de5-4ecc-a0dd-88098fb02ffb" class="">Oscilloscope music is a special type of music that, when plotted on an <a href="https://en.wikipedia.org/wiki/Oscilloscope">oscilloscope</a> in X-Y mode, draws images. The X-Y mode plots two signals, in this case the right and left channels of the music, against one another. </p><p id="09065230-a2a6-4cce-8107-ad97fdbc9fc2" class="">This is similar to the concept of a <a href="https://en.wikipedia.org/wiki/Lissajous_curve">Lissajous figure</a>. The graphic on the right shows a sine wave and a cosine wave, when plotted against one another, form a circle.</p><p id="d43e9e49-c50b-478e-968e-a44b10bfe873" class="">Any shape can be plotted on the oscilloscope in this way, but remember that the same signal is also the music, so it needs to sound good as well. </p><p id="f297e5cf-9744-4a27-8b13-d8d74d8a3863" class="">We have created a live performance instrument that produces oscilloscope music in real time. Our instrument outputs audio, which in turn plots the graphics on the oscilloscope display.</p></div><div id="f221c039-8e2d-4b7f-b9b9-b1db652143ec" style="width:50%" class="column"><figure id="9d90e5b0-eda4-4267-8c4a-d3ca57a34700" class="image"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Circular_Lissajous.gif"><img style="width:360px" src="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Circular_Lissajous.gif"/></a></figure></div></div><h2 id="d007b042-8953-41bd-bf19-1111747d504c" class="">How does it work?</h2><div id="a54cef9a-8a1a-46f9-ae16-e6ebc95269f3" class="column-list"><div id="570fa139-5556-427b-90cf-ba72cb0c92b8" style="width:56.25%" class="column"><figure id="c9f8c358-e406-4e29-a0cd-76dfa5d8debe" class="image"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled.png"><img style="width:739px" src="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled.png"/></a></figure></div><div id="b5cf4e6a-0b99-4ed5-9f0f-c5bd0b9a7246" style="width:43.75000000000001%" class="column"><p id="93b04dc1-0f23-4ce7-a3c5-367b75341e03" class="">This is a diagram of our instrument. It is controlled by a piano keyboard and a pair of knobs (potentiometers). These knobs are the same as the knobs on an <a href="https://en.wikipedia.org/wiki/Etch_A_Sketch">etch-a-sketch</a> . While you play notes on the keyboard, you use the knobs to draw the shape the notes make. There is also an erase button to clear the display and a sustain pedal.</p><figure id="83180e08-7c09-4873-8680-74cbcc9b43fa" class="link-to-page"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Electrical%20Design%2083180e087c094873868074cbcc9b43fa.html"><img class="icon" src="https://www.notion.so/icons/computer-chip_gray.svg"/>Electrical Design</a></figure><p id="5271e390-ce1c-4aa0-b5c8-39cf8c9a652f" class="">The inputs, knobs and keyboard, are controlled by an Arduino. The Arduino then sends knob positions and notes to the computer.</p><figure id="f748475a-fe6f-4b66-8cfc-3f076168ebbb" class="link-to-page"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Firmware%20Design%20f748475afe6f4b668cfc3f076168ebbb.html"><img class="icon" src="https://www.notion.so/icons/snippet_gray.svg"/>Firmware Design</a></figure></div></div><p id="e7329c54-ad47-4603-ab2a-71ee3ab106ff" class="">Because the sound and the image are produced by the same signal, changing the image with the etch-a-sketch knobs also affects the tone of the sound. This signal is generated by software running on a laptop because the processing must be done much faster than would be possible on the Arduino.</p><figure id="8f092403-daef-4f4f-9b83-9239c101b073" class="link-to-page"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Software%20Design%208f092403daef4f4f9b839239c101b073.html"><img class="icon" src="https://www.notion.so/icons/code_gray.svg"/>Software Design</a></figure><p id="65cebf1d-b9e9-4a7a-9b7d-c0e8770af539" class="">Our project also includes an alternative visualization mechanism, a laser galvanometer, or galvo. This is a device that deflects a laser beam using a mirror in a similar way to how an oscilloscope draws on its screen. However, because of its nature as a mechanical system, the galvo cannot display signals that are in the audible sound range the way the oscilloscope can. When the galvo is used, the musical aspect is lost. </p><figure id="b92b71b5-63af-48b0-9839-214c2a25bd87" class="link-to-page"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Mechanical%20Design%20b92b71b563af48b09839214c2a25bd87.html"><img class="icon" src="https://www.notion.so/icons/wrench_gray.svg"/>Mechanical Design</a></figure><h2 id="830e6c64-e65f-4062-a257-53726d2f508a" class="">Process</h2><p id="0aa49023-adee-4803-8ba8-e20dba787d15" class="">This project was undertaken in three design sprints. Each sprint focused on a set of goals to be met by the end of the sprint and culminated with an integrated prototype and a sprint review presentation.</p><div id="b3349e84-f0ab-47e7-8f09-9c2e96ce7be9" class="column-list"><div id="6a8392b7-ec23-45db-b55a-7b5f9cf6ceb3" style="width:50%" class="column"><h3 id="fc4f7abf-0387-407c-aa4b-0b2ac7111633" class="">Sprint 1</h3><p id="e9fb3eeb-b9e4-44bc-b3c9-ba09b318f7be" class="">Our first sprint focused on defining our project, laying out the architecture of the product, and building prototype electronics. We constructed a breadboard version of our keyboard and our software gained the ability to draw points on the screen of the oscilloscope. </p><p id="b1f1de67-2c19-4ac5-b2c5-e387c360d1ef" class=""><a href="https://docs.google.com/presentation/d/1BRz-TZdJVTZKEsD3ClPCslzEHIjGprh5YqIyECyXXr4/edit?usp=sharing">Sprint 1 Review Slides</a></p></div><div id="fd55923d-04e9-4576-aafc-c80676df7011" style="width:50%" class="column"><h3 id="fecb58bf-92d4-401a-b791-3ce5d82c786c" class="">Sprint 2</h3><p id="e8e2a467-5fde-42bb-965a-7bb9e768fef1" class="">We dove into developing <a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Mechanical%20Design%20b92b71b563af48b09839214c2a25bd87.html">laser galvanometers</a> during this sprint. This replaced the keyboard as our primary mechanical objective. The software gained the ability to draw vectors defined by the potentiometer inputs. </p><p id="b622a2c6-e459-424d-8b56-8cd2142f1876" class=""><a href="https://docs.google.com/presentation/d/1qN_XWHAQbykWezd6ZL_4BSxkP4VUepDUCvINg7n74h0/edit?usp=sharing">Sprint 2 Review Slides</a></p></div></div><div id="70361f27-837b-4e44-9f2d-d8bdef676a10" class="column-list"><div id="189881ee-c701-4909-a5ae-468bdc4bd9a4" style="width:50%" class="column"><h3 id="89f9b586-0c98-42cd-833f-7e3ed54b27da" class="">Sprint 3</h3><p id="0b314c12-01ea-41f0-b662-ef8a4e7262f3" class="">In this sprint, we fully integrated the instrument. The software began taking both vector (knobs) and pitch (keyboard) inputs. The galvanometer project proved to be incompatible with the oscilloscope music aspect, so it was abandoned in favor of a piano keyboard enclosure.</p><p id="3cac59d0-642c-4041-92ec-5d8ea6d119d8" class=""><a href="https://docs.google.com/presentation/d/16uI5sQk9TJnSf6e79ZYfPSpwb18YrD_Y2qNiHOVfcJA/edit?usp=sharing">Sprint 3 Review Slides</a></p></div><div id="dac31261-65d7-4194-959c-2f0f47c7786e" style="width:50%" class="column"><h3 id="fa5321fe-4e2c-411c-bc6c-120cc5fbe666" class="">Demo Day</h3><p id="ed63c49c-2399-44e8-a012-7f54def3b8af" class="">The time before the final demonstration served as an informal fourth sprint. The final keyboard box was designed and built in two days during this time. We added software, firmware, and hardware upgrades to allow for polyphony (playing multiple notes at once), which was a non-trivial challenge.</p></div></div><p id="99fdd1c0-a440-449c-ae66-a7f8db7cc1d4" class="">As part of the PIE course, this project was undertaken with a budet of less than $250. We came in well under that budget, partially by making use of items team members already owned or could borrow.</p><figure id="2da746c4-d028-402b-9419-4f8849ac7961" class="link-to-page"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Budget%202da746c4d028402b94194f8849ac7961.html"><img class="icon" src="https://www.notion.so/icons/cash_gray.svg"/>Budget</a></figure><h2 id="ab223b01-f3df-4da8-b232-d4256ba820c8" class="">Meet the Team</h2><div id="f8477c96-7089-4875-8b52-cf4a11135069" class="column-list"><div id="f1b211dd-236c-462e-9823-a3b24ea08cfa" style="width:50%" class="column"><h3 id="ca13407f-7deb-4eeb-a535-1bc4a992f141" class="">Vaughn Rhinehart</h3><figure id="3a0a1b6c-a6fa-4e48-ac55-71155914c4b8" class="image"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled.jpeg"><img style="width:1804px" src="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled.jpeg"/></a></figure><p id="6e307c3f-dc34-43d6-ad8c-be9ff74357df" class="">Mechanical Engineer</p><p id="8039ccaa-c039-4bb2-bf11-2ea1b0aa2b4a" class="">Interested in learning more about oscilloscope music synthesis and exploring laser galvanometers</p></div><div id="bb24e81c-db1b-4000-bdb1-6077159c2d97" style="width:50%" class="column"><h3 id="08def033-1064-4348-b465-bfdf398fed62" class="">Daniel Sudzilouski</h3><figure id="dfa6da9d-d1df-44af-99ae-6826c96ee97f" class="image"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%201.jpeg"><img style="width:994px" src="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%201.jpeg"/></a></figure><p id="d64b3f45-93d9-46cc-af02-b0c01e71db71" class="">Software Engineer</p><p id="d813e31c-f6db-4f2c-ac55-09403c632330" class="">Interested in high-performance C++ code and learning about audio APIs and async patterns.</p></div></div><div id="82693b8b-e185-4000-9b74-9266c4b4b45b" class="column-list"><div id="7f669a4e-98f1-487a-86a5-a8ff301d7e47" style="width:50%" class="column"><h3 id="6dc0a3d7-f535-457b-94c7-11147647078a" class="">Ben Kim</h3><figure id="2643c0c2-7e32-433c-ae05-234d7074ca7b" class="image"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%202.jpeg"><img style="width:616px" src="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%202.jpeg"/></a></figure><p id="4a2985de-a5ff-4f7a-a625-142b0a0418cf" class="">Electrical Engineer</p><p id="02970d28-cdb5-4b64-b66d-419ae044fb6b" class="">Interested in music, sound synthesis, keypad circuit design, and the mathematics of oscilloscope music.</p></div><div id="216b6731-bf7b-47c7-a786-158b151f77a2" style="width:50%" class="column"><h3 id="610e797f-dfe6-4784-a30b-8237929fea3b" class="">Belén Hutchins</h3><figure id="6514beb0-689d-46a3-9c4e-0324e301ef16" class="image"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%203.jpeg"><img style="width:544px" src="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%203.jpeg"/></a></figure><p id="a8282189-23d0-4fca-bb24-cb406621c18c" class="">Sustainability Engineer</p><p id="ad22d2bf-31d3-4f7e-82b0-a2418e5751e9" class="">Interested in learning more about oscilloscopes and their interaction with music and audio synthesis.</p></div></div><div id="25922490-6012-46da-8307-fae5ba9055f3" class="column-list"><div id="9085cd92-4d20-4ab8-b604-69cdc36ffd1f" style="width:50%" class="column"><h3 id="89685322-edba-4a1f-acee-e5b48dc16bc3" class="">Juno Choi</h3><figure id="ac2b9384-aefa-4487-ab1a-313cf9342437" class="image"><a href="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%204.jpeg"><img style="width:526px" src="Oscilloscope%20Music%207a3aaad3ab964c1fb35f99a9dc6e4d58/Untitled%204.jpeg"/></a></figure><p id="bcb3d4fd-e2cf-490b-ad72-fae28bc3c2d1" class="">Electrical Engineer</p><p id="3287e52e-0759-4de9-8f43-54e8c429ffdc" class="">Interested in integration between hardware and software, learning about audio synthesis, and Arduino firmware.</p></div><div id="f750365a-0efc-4e56-925e-c5de26afeda9" style="width:50%" class="column"><p id="56a218b3-e8b3-4fd0-86c1-9e2a3f5688c1" class="">
+</p></div></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
