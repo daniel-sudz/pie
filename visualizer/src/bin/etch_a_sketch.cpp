@@ -86,8 +86,8 @@ struct EtchaSketchSerialReciever : public serial::SerialReciever {
             sscanf(msg.c_str(), "KEYBOARDNOTES%d", &new_trace_freqs);
             trace_freqs = new_trace_freqs;
         } else if (msg.find("ERASE") != std::string::npos) {
-            // restart the program
-            exit(0);
+            trace_freqs = 0;
+            pot_num_values = 0;
         }
         pot_count_debug_logger.log_if_needed([this]() { return "Currently holding " + std::to_string(pot_num_values) + " pot value and playing freq " + std::to_string(trace_freqs) + " frequency"; });
     }
