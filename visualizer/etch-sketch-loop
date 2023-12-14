@@ -3,6 +3,5 @@
 # when the reset button is pressed, this signals to re-start the etch-sketch program
 while :
 do
-  sleep 5
   sudo ./out/src/EtchSketch
 done
